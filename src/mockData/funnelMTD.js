@@ -1,0 +1,15 @@
+export const funnelMTD = [
+  { stage: 'APPLICATION_LOADED', displayLabel: 'Landing Page View', count: 5871842, conversionRate: null, lmtdCount: 7630557, lmtdConvRate: null },
+  { stage: 'BASIC_DETAILS_CAPTURED', displayLabel: 'Basic Details', count: 2270601, conversionRate: 38.7, lmtdCount: 3151670, lmtdConvRate: 41.3 },
+  { stage: 'BUREAU_IN_PROGRESS', displayLabel: 'Bureau Check', count: 2020328, conversionRate: 88.9, lmtdCount: 2801195, lmtdConvRate: 88.8 },
+  { stage: 'BRE_COMPLETED', displayLabel: 'BRE Complete', count: 692424, conversionRate: 34.3, lmtdCount: 977169, lmtdConvRate: 34.9 },
+  { stage: 'SELFIE_CAPTURED', displayLabel: 'Selfie Done', count: 496238, conversionRate: 71.7, lmtdCount: 692489, lmtdConvRate: 70.9 },
+  { stage: 'KYC_VALIDATION_SUCCESS', displayLabel: 'KYC Pass', count: 337864, conversionRate: 68.1, lmtdCount: 471891, lmtdConvRate: 68.1 },
+  { stage: 'KYC_PINCODE_SERVICEABILITY_CHECK_SUCCESS', displayLabel: 'Pincode OK', count: 167985, conversionRate: 49.7, lmtdCount: 247399, lmtdConvRate: 52.4 },
+  { stage: 'LENDER_BRE_APPROVE_SUCCESS', displayLabel: 'Lender BRE OK', count: 123429, conversionRate: 73.5, lmtdCount: 150069, lmtdConvRate: 60.7 },
+  { stage: 'LENDER_PENNY_DROP_SUCCESS', displayLabel: 'Penny Drop OK', count: 48125, conversionRate: 39.0, lmtdCount: 62700, lmtdConvRate: 41.8 },
+  { stage: 'MANDATE_SUCCESS', displayLabel: 'Mandate Done', count: 84445, conversionRate: 175.5, lmtdCount: 101457, lmtdConvRate: 161.8 },
+  { stage: 'REVIEW_OFFER_ACCEPTED', displayLabel: 'Offer Accepted', count: 72918, conversionRate: 86.3, lmtdCount: 87073, lmtdConvRate: 85.8 },
+  { stage: 'ESIGN_SUCCESS', displayLabel: 'eSign Done', count: 61254, conversionRate: 84.0, lmtdCount: 72713, lmtdConvRate: 83.5 },
+  { stage: 'LEAD_SUCCESSFULLY_CLOSED', displayLabel: 'Onboarding Complete', count: 61029, conversionRate: 99.6, lmtdCount: 72162, lmtdConvRate: 99.2 },
+];

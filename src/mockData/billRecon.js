@@ -1,0 +1,32 @@
+export const reconSnapshot = [
+  { dimension: 'Total Bills',                ssfb: 277395, lms: 0,    diff: 277395, isAccountCount: true },
+  { dimension: 'Bills with Value = 0',       ssfb: 145347, lms: 0,    diff: 145347, isAccountCount: true },
+  { dimension: 'Bills with Value > 0',       ssfb: 132048, lms: 0,    diff: 132048, isAccountCount: true },
+  { dimension: 'Total Bill Amount (₹ Cr)',   ssfb: 53.71,  lms: null, diff: null,   isAccountCount: false },
+  { dimension: 'Accounts with Convenience Fee', ssfb: 128245, lms: 0, diff: 128245, isAccountCount: true },
+  { dimension: 'Accounts with Bounce Fee',   ssfb: 22812,  lms: 0,    diff: 22812,  isAccountCount: true },
+  { dimension: 'Accounts with Late Fee',     ssfb: 4742,   lms: 0,    diff: 4742,   isAccountCount: true },
+];
+
+export const lanRows = [
+  { id: 1,  lmsLan: 'PYTMPPSSFB501744372',  ssfbLan: '8551761833454364', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 3757.05,  dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 2,  lmsLan: 'PYTMPPSSFB5017219376', ssfbLan: '5451767205150113', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 25.59,    dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 3,  lmsLan: 'PYTMPPSSFB501741581',  ssfbLan: '2411761740246596', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 2568.61,  dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 4,  lmsLan: 'PYTMPPSSFB5017181621', ssfbLan: '4261765713686632', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 700.00,   dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 5,  lmsLan: 'PYTMPPSSFB5017265677', ssfbLan: '7841768981567453', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 0,        dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 6,  lmsLan: 'PYTMPPSSFB5017389201', ssfbLan: '1231769452389012', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 1245.30,  dimension: 'Accounts with Convenience Fee', sentAt: null },
+  { id: 7,  lmsLan: 'PYTMPPSSFB5017401892', ssfbLan: '9871770123456789', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 4500.00,  dimension: 'Accounts with Convenience Fee', sentAt: null },
+  { id: 8,  lmsLan: 'PYTMPPSSFB5017512034', ssfbLan: '6541771234567890', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 890.75,   dimension: 'Accounts with Convenience Fee', sentAt: null },
+  { id: 9,  lmsLan: 'PYTMPPSSFB5017623145', ssfbLan: '3211772345678901', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 2100.00,  dimension: 'Accounts with Bounce Fee', sentAt: null },
+  { id: 10, lmsLan: 'PYTMPPSSFB5017734256', ssfbLan: '7891773456789012', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 1575.50,  dimension: 'Accounts with Bounce Fee', sentAt: null },
+  { id: 11, lmsLan: 'PYTMPPSSFB5017845367', ssfbLan: '4561774567890123', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 350.00,   dimension: 'Accounts with Bounce Fee', sentAt: null },
+  { id: 12, lmsLan: 'PYTMPPSSFB5017956478', ssfbLan: '1231775678901234', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 6200.00,  dimension: 'Accounts with Late Fee', sentAt: null },
+  { id: 13, lmsLan: 'PYTMPPSSFB5018067589', ssfbLan: '8901776789012345', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 920.00,   dimension: 'Accounts with Late Fee', sentAt: null },
+  { id: 14, lmsLan: 'PYTMPPSSFB5018178690', ssfbLan: '5671777890123456', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 3300.25,  dimension: 'Total Bills', sentAt: null },
+  { id: 15, lmsLan: 'PYTMPPSSFB5018289701', ssfbLan: '2341778901234567', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 0,        dimension: 'Total Bills', sentAt: null },
+  { id: 16, lmsLan: 'PYTMPPSSFB5018390812', ssfbLan: '9011779012345678', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 1800.00,  dimension: 'Bills with Value = 0', sentAt: null },
+  { id: 17, lmsLan: 'PYTMPPSSFB5018401923', ssfbLan: '6781780123456789', ssfbVal: 0, lmsVal: 0, diff: 0, repayment: 0,        dimension: 'Bills with Value = 0', sentAt: null },
+  { id: 18, lmsLan: 'PYTMPPSSFB5018513034', ssfbLan: '3451781234567890', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 5100.00,  dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 19, lmsLan: 'PYTMPPSSFB5018624145', ssfbLan: '0121782345678901', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 275.00,   dimension: 'Bills with Value > 0', sentAt: null },
+  { id: 20, lmsLan: 'PYTMPPSSFB5018735256', ssfbLan: '6891783456789012', ssfbVal: 1, lmsVal: 0, diff: 1, repayment: 4250.75,  dimension: 'Bills with Value > 0', sentAt: null },
+];
