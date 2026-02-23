@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useDashboard } from '../context/DashboardContext';
-import { funnelMTD } from '../mockData/funnelMTD';
-import { funnelClosed } from '../mockData/funnelClosed';
+import { funnelByLender, LENDER_OPTIONS } from '../mockData/funnelMTD';
+import { closedByLender } from '../mockData/funnelClosed';
 import { dailyFunnel } from '../mockData/dailyFunnel';
 import { formatNumber, getDeltaColor, getDeltaBold, getConversionRAG, RAG_COLORS } from '../utils/rag';
 import RAGBadge from '../components/RAGBadge';
@@ -9,7 +9,7 @@ import RAGBadge from '../components/RAGBadge';
 const STATUS_OPTIONS = ['all', 'red', 'amber', 'green', 'gray'];
 
 export default function DeepdiveView() {
-  const { funnelType, setFunnelType, openDrillDown } = useDashboard();
+  const { funnelType, setFunnelType, selectedLender, setSelectedLender, navigateToStageDetail, setPreviousView } = useDashboard();
   const [localFunnelType, setLocalFunnelType] = useState(funnelType);
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -18,8 +18,16 @@ export default function DeepdiveView() {
     setFunnelType(type);
   };
 
+  const handleStageClick = (stage) => {
+    setPreviousView('deepdive');
+    navigateToStageDetail(stage);
+  };
+
   const tableData = useMemo(() => {
-    const source = localFunnelType === 'open' ? funnelMTD : funnelClosed;
+    const openSrc = funnelByLender[selectedLender] || funnelByLender.ALL;
+    const closedSrc = closedByLender[selectedLender] || closedByLender.ALL;
+    const source = localFunnelType === 'open' ? openSrc : closedSrc;
+    const firstCount = source[0]?.count || 1;
     const lastDay = dailyFunnel[dailyFunnel.length - 1];
 
     const rows = source.map((stage, idx) => {
@@ -32,8 +40,7 @@ export default function DeepdiveView() {
       const rag = stage.conversionRate != null
         ? getConversionRAG(stage.conversionRate, lmtdConv)
         : 'gray';
-
-      const overallConvMTD = idx === 0 ? null : (stage.count / (localFunnelType === 'open' ? funnelMTD : funnelClosed)[0].count * 100);
+      const overallConvMTD = idx === 0 ? null : (stage.count / firstCount * 100);
 
       return {
         ...stage,
@@ -49,7 +56,7 @@ export default function DeepdiveView() {
 
     if (statusFilter === 'all') return rows;
     return rows.filter(r => r.rag === statusFilter);
-  }, [localFunnelType, statusFilter]);
+  }, [localFunnelType, statusFilter, selectedLender]);
 
   return (
     <div className="space-y-4">
@@ -62,23 +69,35 @@ export default function DeepdiveView() {
             <p className="text-[11px] text-slate-400 mt-0.5">Click any row to see L2 sub-stages and L3 error logs</p>
           </div>
 
-          <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
-            <button
-              onClick={() => handleToggle('open')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                localFunnelType === 'open' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
+          <div className="flex items-center gap-3">
+            <select
+              value={selectedLender}
+              onChange={(e) => setSelectedLender(e.target.value)}
+              className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              Open Funnel
-            </button>
-            <button
-              onClick={() => handleToggle('closed')}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                localFunnelType === 'closed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              Closed Funnel
-            </button>
+              {LENDER_OPTIONS.map(l => (
+                <option key={l} value={l}>{l === 'ALL' ? 'All Lenders' : l}</option>
+              ))}
+            </select>
+
+            <div className="flex items-center bg-slate-100 rounded-lg p-0.5">
+              <button
+                onClick={() => handleToggle('open')}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  localFunnelType === 'open' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Open Funnel
+              </button>
+              <button
+                onClick={() => handleToggle('closed')}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  localFunnelType === 'closed' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Closed Funnel
+              </button>
+            </div>
           </div>
         </div>
 
@@ -121,15 +140,12 @@ export default function DeepdiveView() {
                   <tr
                     key={row.stage}
                     className="hover:bg-blue-50/60 cursor-pointer transition-colors group"
-                    onClick={() => openDrillDown(row.stage)}
+                    onClick={() => handleStageClick(row.stage)}
                   >
                     <td className="px-4 py-2 text-[10px] text-slate-400">{row.idx}</td>
                     <td className="px-4 py-2">
                       <div className="flex items-center gap-2">
-                        <span
-                          className="w-1.5 h-6 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: ragColors.dot }}
-                        />
+                        <span className="w-1.5 h-6 rounded-full flex-shrink-0" style={{ backgroundColor: ragColors.dot }} />
                         <div>
                           <span className="text-sm font-medium text-slate-800 group-hover:text-blue-700 transition-colors">
                             {row.displayLabel}
@@ -140,38 +156,22 @@ export default function DeepdiveView() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-700 tabular-nums font-medium">
-                      {formatNumber(row.count)}
-                    </td>
+                    <td className="px-4 py-2 text-right text-slate-700 tabular-nums font-medium">{formatNumber(row.count)}</td>
                     <td className="px-4 py-2 text-right tabular-nums font-semibold" style={{ color: ragColors.text }}>
-                      {row.conversionRate != null && row.conversionRate <= 100
-                        ? `${row.conversionRate.toFixed(1)}%`
-                        : '—'}
+                      {row.conversionRate != null && row.conversionRate <= 100 ? `${row.conversionRate.toFixed(1)}%` : '—'}
                     </td>
                     <td className="px-4 py-2 text-right text-slate-500 tabular-nums text-xs">
                       {row.overallConvMTD != null ? `${row.overallConvMTD.toFixed(2)}%` : '—'}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-400 tabular-nums">
-                      {row.lmtdCount != null ? formatNumber(row.lmtdCount) : '—'}
-                    </td>
-                    <td className="px-4 py-2 text-right text-slate-400 tabular-nums">
-                      {row.lmtdConv != null ? `${row.lmtdConv.toFixed(1)}%` : '—'}
-                    </td>
+                    <td className="px-4 py-2 text-right text-slate-400 tabular-nums">{row.lmtdCount != null ? formatNumber(row.lmtdCount) : '—'}</td>
+                    <td className="px-4 py-2 text-right text-slate-400 tabular-nums">{row.lmtdConv != null ? `${row.lmtdConv.toFixed(1)}%` : '—'}</td>
                     <td className={`px-4 py-2 text-right tabular-nums ${
-                      deltaColor === 'green' ? 'text-emerald-600' :
-                      deltaColor === 'red' ? 'text-red-600' :
-                      'text-slate-400'
+                      deltaColor === 'green' ? 'text-emerald-600' : deltaColor === 'red' ? 'text-red-600' : 'text-slate-400'
                     } ${isBold ? 'font-bold text-sm' : 'font-medium'}`}>
-                      {row.delta != null
-                        ? `${row.delta > 0 ? '+' : ''}${row.delta.toFixed(1)}pp`
-                        : '—'}
+                      {row.delta != null ? `${row.delta > 0 ? '+' : ''}${row.delta.toFixed(1)}pp` : '—'}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-500 tabular-nums">
-                      {row.t1 != null ? formatNumber(row.t1) : '—'}
-                    </td>
-                    <td className="px-4 py-2 text-center">
-                      <RAGBadge status={row.rag} />
-                    </td>
+                    <td className="px-4 py-2 text-right text-slate-500 tabular-nums">{row.t1 != null ? formatNumber(row.t1) : '—'}</td>
+                    <td className="px-4 py-2 text-center"><RAGBadge status={row.rag} /></td>
                   </tr>
                 );
               })}

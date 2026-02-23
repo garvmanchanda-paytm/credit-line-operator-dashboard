@@ -5,7 +5,7 @@ import { lanRows } from '../../mockData/billRecon';
 const PAGE_SIZE = 50;
 
 export default function LANTable({ dimension }) {
-  const { setShowEmailModal } = useDashboard();
+  const { setShowEmailSection } = useDashboard();
   const [selected, setSelected] = useState(new Set());
   const [sortBy, setSortBy] = useState('diff');
   const [sortDir, setSortDir] = useState('desc');
@@ -113,7 +113,7 @@ export default function LANTable({ dimension }) {
         <div className="sticky bottom-0 left-0 right-0 bg-blue-600 text-white px-5 py-3 rounded-b-xl flex items-center justify-between">
           <span className="text-sm font-medium">{selected.size} LAN{selected.size > 1 ? 's' : ''} selected</span>
           <button
-            onClick={() => setShowEmailModal(true)}
+            onClick={() => setShowEmailSection(true)}
             className="bg-white text-blue-700 px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-50 transition-colors"
           >
             Send Reconciliation Request to SSFB

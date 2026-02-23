@@ -1,4 +1,4 @@
-export const funnelClosed = [
+const allLenderData = [
   { stage: 'BASIC_DETAILS_CAPTURED', displayLabel: 'Started', count: 884533, conversionRate: null, lmtdCount: 1021000, lmtdConvRate: null },
   { stage: 'BRE_REQUESTED', displayLabel: 'Bureau Pass', count: 787324, conversionRate: 89.0, lmtdCount: 875800, lmtdConvRate: 85.8 },
   { stage: 'BRE_COMPLETED', displayLabel: 'BRE Done', count: 268654, conversionRate: 34.1, lmtdCount: 464800, lmtdConvRate: 53.1 },
@@ -14,3 +14,22 @@ export const funnelClosed = [
   { stage: 'LEAD_SUCCESSFULLY_CLOSED', displayLabel: 'Onboarding Complete', count: 18485, conversionRate: 99.2, lmtdCount: 18400, lmtdConvRate: 95.8 },
   { stage: 'CREDIT_LINE_LINKED', displayLabel: 'Limit Activated', count: 8501, conversionRate: 46.0, lmtdCount: 22900, lmtdConvRate: 124.5 },
 ];
+
+function scaleLender(data, factor, convNoise) {
+  return data.map((row) => ({
+    ...row,
+    count: Math.round(row.count * factor),
+    lmtdCount: Math.round(row.lmtdCount * factor),
+    conversionRate: row.conversionRate != null ? parseFloat((row.conversionRate + convNoise).toFixed(1)) : null,
+    lmtdConvRate: row.lmtdConvRate != null ? parseFloat((row.lmtdConvRate + convNoise * 0.5).toFixed(1)) : null,
+  }));
+}
+
+export const closedByLender = {
+  ALL: allLenderData,
+  SSFB: scaleLender(allLenderData, 0.62, -0.8),
+  HDFC: scaleLender(allLenderData, 0.38, 1.1),
+};
+
+// Default export for backward compatibility
+export const funnelClosed = allLenderData;

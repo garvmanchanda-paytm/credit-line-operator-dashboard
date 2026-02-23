@@ -1,4 +1,4 @@
-export const funnelMTD = [
+const allLenderData = [
   { stage: 'APPLICATION_LOADED', displayLabel: 'Landing Page View', count: 5871842, conversionRate: null, lmtdCount: 7630557, lmtdConvRate: null },
   { stage: 'BASIC_DETAILS_CAPTURED', displayLabel: 'Basic Details', count: 2270601, conversionRate: 38.7, lmtdCount: 3151670, lmtdConvRate: 41.3 },
   { stage: 'BUREAU_IN_PROGRESS', displayLabel: 'Bureau Check', count: 2020328, conversionRate: 88.9, lmtdCount: 2801195, lmtdConvRate: 88.8 },
@@ -13,3 +13,24 @@ export const funnelMTD = [
   { stage: 'ESIGN_SUCCESS', displayLabel: 'eSign Done', count: 61254, conversionRate: 84.0, lmtdCount: 72713, lmtdConvRate: 83.5 },
   { stage: 'LEAD_SUCCESSFULLY_CLOSED', displayLabel: 'Onboarding Complete', count: 61029, conversionRate: 99.6, lmtdCount: 72162, lmtdConvRate: 99.2 },
 ];
+
+function scaleLender(data, factor, convNoise) {
+  return data.map((row) => ({
+    ...row,
+    count: Math.round(row.count * factor),
+    lmtdCount: Math.round(row.lmtdCount * factor),
+    conversionRate: row.conversionRate != null ? parseFloat((row.conversionRate + convNoise).toFixed(1)) : null,
+    lmtdConvRate: row.lmtdConvRate != null ? parseFloat((row.lmtdConvRate + convNoise * 0.5).toFixed(1)) : null,
+  }));
+}
+
+export const funnelByLender = {
+  ALL: allLenderData,
+  SSFB: scaleLender(allLenderData, 0.65, -1.2),
+  HDFC: scaleLender(allLenderData, 0.35, 0.8),
+};
+
+export const LENDER_OPTIONS = ['ALL', 'SSFB', 'HDFC'];
+
+// Default export for backward compatibility
+export const funnelMTD = allLenderData;

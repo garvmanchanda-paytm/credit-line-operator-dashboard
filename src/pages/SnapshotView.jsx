@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useDashboard } from '../context/DashboardContext';
-import { funnelMTD } from '../mockData/funnelMTD';
-import { funnelClosed } from '../mockData/funnelClosed';
+import { funnelByLender, LENDER_OPTIONS } from '../mockData/funnelMTD';
+import { closedByLender } from '../mockData/funnelClosed';
 import { dailyFunnel, lmsdData } from '../mockData/dailyFunnel';
 import VerticalFunnel from '../components/VerticalFunnel';
 import KPIStrip from '../components/KPIStrip';
 import RAGBadge from '../components/RAGBadge';
 import { formatNumber } from '../utils/rag';
 
-function generateCommentary(funnelType) {
-  const data = funnelType === 'open' ? funnelMTD : funnelClosed;
+function generateCommentary(funnelType, data) {
   const first = data[0];
   const last = data[data.length - 1];
   const overallConv = (last.count / first.count * 100).toFixed(2);
@@ -45,16 +44,8 @@ function generateCommentary(funnelType) {
   ];
 }
 
-function buildLMTDData(funnelType) {
-  if (funnelType === 'open') {
-    return funnelMTD.map(s => ({
-      stage: s.stage,
-      displayLabel: s.displayLabel,
-      count: s.lmtdCount,
-      conversionRate: s.lmtdConvRate,
-    }));
-  }
-  return funnelClosed.map(s => ({
+function buildLMTDData(data) {
+  return data.map(s => ({
     stage: s.stage,
     displayLabel: s.displayLabel,
     count: s.lmtdCount,
@@ -62,11 +53,10 @@ function buildLMTDData(funnelType) {
   }));
 }
 
-function buildT1Data(funnelType) {
+function buildT1Data(data) {
   const lastDay = dailyFunnel[dailyFunnel.length - 1];
   if (!lastDay) return [];
-  const source = funnelType === 'open' ? funnelMTD : funnelClosed;
-  return source.map(s => {
+  return data.map(s => {
     const dayData = lastDay[s.stage];
     return {
       stage: s.stage,
@@ -77,12 +67,11 @@ function buildT1Data(funnelType) {
   }).filter(s => s.count > 0);
 }
 
-function buildLMSDData(funnelType) {
+function buildLMSDData(data) {
   const lastDayIdx = dailyFunnel.length - 1;
   const lmsd = lmsdData[lastDayIdx];
   if (!lmsd) return [];
-  const source = funnelType === 'open' ? funnelMTD : funnelClosed;
-  return source.map(s => {
+  return data.map(s => {
     const dayData = lmsd[s.stage];
     return {
       stage: s.stage,
@@ -94,7 +83,7 @@ function buildLMSDData(funnelType) {
 }
 
 export default function SnapshotView() {
-  const { funnelType, setFunnelType } = useDashboard();
+  const { funnelType, setFunnelType, selectedLender, setSelectedLender } = useDashboard();
   const [localFunnelType, setLocalFunnelType] = useState(funnelType);
 
   const handleToggle = (type) => {
@@ -102,11 +91,15 @@ export default function SnapshotView() {
     setFunnelType(type);
   };
 
-  const commentary = useMemo(() => generateCommentary(localFunnelType), [localFunnelType]);
-  const mtdData = localFunnelType === 'open' ? funnelMTD : funnelClosed;
-  const lmtdData = useMemo(() => buildLMTDData(localFunnelType), [localFunnelType]);
-  const t1Data = useMemo(() => buildT1Data(localFunnelType), [localFunnelType]);
-  const lmsdDisplayData = useMemo(() => buildLMSDData(localFunnelType), [localFunnelType]);
+  const mtdData = useMemo(() => {
+    const src = localFunnelType === 'open' ? funnelByLender : closedByLender;
+    return src[selectedLender] || src.ALL;
+  }, [localFunnelType, selectedLender]);
+
+  const commentary = useMemo(() => generateCommentary(localFunnelType, mtdData), [localFunnelType, mtdData]);
+  const lmtdData = useMemo(() => buildLMTDData(mtdData), [mtdData]);
+  const t1Data = useMemo(() => buildT1Data(mtdData), [mtdData]);
+  const lmsdDisplayData = useMemo(() => buildLMSDData(mtdData), [mtdData]);
 
   return (
     <div className="space-y-5">
@@ -114,7 +107,18 @@ export default function SnapshotView() {
       <div className="bg-white rounded-xl border border-slate-200 p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-slate-900">Funnel Health Summary</h2>
-          <span className="text-[10px] text-slate-400">Feb 2026 MTD</span>
+          <div className="flex items-center gap-3">
+            <select
+              value={selectedLender}
+              onChange={(e) => setSelectedLender(e.target.value)}
+              className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {LENDER_OPTIONS.map(l => (
+                <option key={l} value={l}>{l === 'ALL' ? 'All Lenders' : l}</option>
+              ))}
+            </select>
+            <span className="text-[10px] text-slate-400">Feb 2026 MTD</span>
+          </div>
         </div>
         <div className="space-y-2">
           {commentary.map((line, idx) => (
@@ -126,7 +130,6 @@ export default function SnapshotView() {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <KPIStrip />
 
       {/* 2x2 Funnel Grid */}
@@ -154,44 +157,17 @@ export default function SnapshotView() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Top Row: MTD vs LMTD */}
           <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 min-h-[340px]">
-            <VerticalFunnel
-              data={mtdData}
-              title="Feb MTD"
-              comparisonData={lmtdData}
-              comparisonLabel="vs LMTD"
-              funnelType={localFunnelType}
-            />
+            <VerticalFunnel data={mtdData} title="Feb MTD" comparisonData={lmtdData} comparisonLabel="vs LMTD" funnelType={localFunnelType} />
           </div>
           <div className="border border-slate-100 rounded-lg p-3 bg-blue-50/30 min-h-[340px]">
-            <VerticalFunnel
-              data={lmtdData}
-              title="Jan MTD (LMTD)"
-              comparisonData={mtdData}
-              comparisonLabel="vs MTD"
-              funnelType={localFunnelType}
-            />
+            <VerticalFunnel data={lmtdData} title="Jan MTD (LMTD)" comparisonData={mtdData} comparisonLabel="vs MTD" funnelType={localFunnelType} />
           </div>
-
-          {/* Bottom Row: T-1 vs LMSD */}
           <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 min-h-[340px]">
-            <VerticalFunnel
-              data={t1Data}
-              title="T-1 (Yesterday)"
-              comparisonData={lmsdDisplayData}
-              comparisonLabel="vs LMSD"
-              funnelType={localFunnelType}
-            />
+            <VerticalFunnel data={t1Data} title="T-1 (Yesterday)" comparisonData={lmsdDisplayData} comparisonLabel="vs LMSD" funnelType={localFunnelType} />
           </div>
           <div className="border border-slate-100 rounded-lg p-3 bg-blue-50/30 min-h-[340px]">
-            <VerticalFunnel
-              data={lmsdDisplayData}
-              title="LMSD (Last Month Same Day)"
-              comparisonData={t1Data}
-              comparisonLabel="vs T-1"
-              funnelType={localFunnelType}
-            />
+            <VerticalFunnel data={lmsdDisplayData} title="LMSD (Last Month Same Day)" comparisonData={t1Data} comparisonLabel="vs T-1" funnelType={localFunnelType} />
           </div>
         </div>
 

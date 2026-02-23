@@ -5,10 +5,10 @@
 
 | Field | Value |
 |-------|-------|
-| Version | 1.4 — Phase 3 (Post-Onboarding) in progress |
+| Version | 2.0 — MVP Revamp |
 | Author | Garv, PM — Paytm Postpaid |
 | Purpose | Cursor/IDE prototype spec — no backend, mock data only |
-| Scope | Charter 1: Onboarding Funnel + Charter 2: Post-Onboarding + Charter 3: User Pulse (CST) |
+| Scope | MVP: Insight Landing + Funnel (multi-lender) + Disbursement + User Pulse + Post-Onboarding |
 | Date | February 2026 |
 
 ### Changelog
@@ -20,6 +20,7 @@
 | 1.2 | Feb 22 2026 | Stage name alignment: KYC_PINCODE_SERVICEABILITY → KYC_PINCODE_SERVICEABILITY_CHECK_SUCCESS. Closed funnel comparison changed from Oct-25 Benchmark to Jan MTD (LMTD) with actual counts. Sub-stage names updated to match real system event names from production mapping. |
 | 1.3 | Feb 22 2026 | Phase 2 — User Pulse (CST Dashboard): Added Section 9 with full taxonomy, L1/L2/L3 view specs, mock data, and component tree. Sidebar updated with "CST" section. DashboardContext extended with User Pulse state. 5 new components + 3 new mock data files. |
 | 1.4 | Feb 22 2026 | Phase 3 — Post-Onboarding Deep Dive (Charter 2): Added Section 10 with 4 tab-sections (Portfolio, Bill Recon, Repayment, Spends). Sidebar updated with "Post-Onb" section. DashboardContext extended with postOnbTab, selectedLanDimension, showEmailModal. 8 new components + 4 new mock data files. Cross-dashboard deep links to User Pulse. |
+| 2.0 | Feb 23 2026 | **MVP Revamp** — Global guidelines applied: (1) Insight Landing Page as unified home; (2) Tapered SVG funnel; (3) Single-lender filtering (ALL/SSFB/HDFC); (4) Disbursement Analysis section; (5) No-pop design — overlays converted to full pages; (6) MD docs per menu in `docs/`; (7) New pages: InsightLandingPage, DisbursementView, StageDetailPage, IssueDetailPage. New mock: disbursement.js. |
 
 ---
 

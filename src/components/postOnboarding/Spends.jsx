@@ -8,8 +8,8 @@ const TREND_ICONS = { stable: '→', rising: '▲', spike: '▲▲', improving: 
 const TREND_COLORS = { stable: 'text-slate-500', rising: 'text-red-600', spike: 'text-red-700 font-bold', improving: 'text-emerald-600' };
 
 export default function Spends() {
-  const { setActiveView, openIssuePanel } = useDashboard();
-  const crossLinkTxnFailed = () => { setActiveView('userPulse'); setTimeout(() => openIssuePanel('txn_failed'), 50); };
+  const { openIssuePanel } = useDashboard();
+  const crossLinkTxnFailed = () => openIssuePanel('txn_failed');
   const yesterday = dailySuccessRate[dailySuccessRate.length - 1];
   const delta = (yesterday.sr - avgSR).toFixed(1);
 

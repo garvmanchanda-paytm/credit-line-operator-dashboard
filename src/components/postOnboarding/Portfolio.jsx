@@ -22,10 +22,10 @@ const KPIS = [
 ];
 
 export default function Portfolio() {
-  const { setPostOnbTab, setActiveView, openIssuePanel } = useDashboard();
+  const { setPostOnbTab, openIssuePanel } = useDashboard();
 
   const crossLinkFrozenToDPD = () => setPostOnbTab('repayment');
-  const crossLinkVKYC = () => { setActiveView('userPulse'); setTimeout(() => openIssuePanel('stuck_vkyc_selfie'), 50); };
+  const crossLinkVKYC = () => openIssuePanel('stuck_vkyc_selfie');
 
   return (
     <div className="space-y-5">
