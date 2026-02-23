@@ -74,6 +74,20 @@ export function DashboardProvider({ children }) {
     setActiveView('lanBreakdown');
   }, []);
 
+  // Error code L2 detail state
+  const [selectedErrorCode, setSelectedErrorCode] = useState(null);
+
+  const navigateToErrorCodeDetail = useCallback((code) => {
+    setSelectedErrorCode(code);
+    setActiveView('errorCodeDetail');
+  }, []);
+
+  const navigateBackFromErrorCodeDetail = useCallback(() => {
+    setSelectedErrorCode(null);
+    setActiveView('postOnboarding');
+    setPostOnbTab('spends');
+  }, []);
+
   // Track which view the drill-down was triggered from
   const openDrillDown = useCallback((stage) => {
     setPreviousView((prev) => prev || 'snapshot');
@@ -143,6 +157,9 @@ export function DashboardProvider({ children }) {
         customer360Lan,
         navigateToCustomer360,
         navigateBackToLanBreakdown,
+        selectedErrorCode,
+        navigateToErrorCodeDetail,
+        navigateBackFromErrorCodeDetail,
       }}
     >
       {children}

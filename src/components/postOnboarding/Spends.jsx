@@ -8,7 +8,7 @@ const TREND_ICONS = { stable: '→', rising: '▲', spike: '▲▲', improving: 
 const TREND_COLORS = { stable: 'text-slate-500', rising: 'text-red-600', spike: 'text-red-700 font-bold', improving: 'text-emerald-600' };
 
 export default function Spends() {
-  const { openIssuePanel } = useDashboard();
+  const { openIssuePanel, navigateToErrorCodeDetail } = useDashboard();
   const crossLinkTxnFailed = () => openIssuePanel('txn_failed');
   const yesterday = dailySuccessRate[dailySuccessRate.length - 1];
   const delta = (yesterday.sr - avgSR).toFixed(1);
@@ -99,9 +99,13 @@ export default function Spends() {
                 const maxDaily = Math.max(...err.dailyCounts);
                 const avg7d = err.dailyCounts.reduce((a, b) => a + b, 0) / err.dailyCounts.length;
                 return (
-                  <tr key={err.code} className={err.trend === 'spike' ? 'bg-red-50/50 font-semibold' : ''}>
+                  <tr
+                    key={err.code}
+                    className={`cursor-pointer transition-colors ${err.trend === 'spike' ? 'bg-red-50/50 font-semibold hover:bg-red-100/50' : 'hover:bg-blue-50/40'}`}
+                    onClick={() => err.code !== 'OTHERS' && navigateToErrorCodeDetail(err.code)}
+                  >
                     <td className="px-4 py-2 text-slate-400">{err.rank}</td>
-                    <td className="px-4 py-2 font-mono font-semibold text-slate-800">{err.code}</td>
+                    <td className="px-4 py-2 font-mono font-semibold text-blue-700 hover:underline">{err.code}</td>
                     <td className="px-4 py-2 text-slate-600">{err.description}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{err.avgDailyCount.toLocaleString()}</td>
                     <td className="px-4 py-2 text-right tabular-nums">{err.pctOfFailures}%</td>
