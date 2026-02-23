@@ -179,6 +179,8 @@ function KpiCard({ icon, label, value, accent }) {
 }
 
 function DpdReconTab() {
+  const { navigateToDpdBreakdown } = useDashboard();
+
   return (
     <div className="space-y-4">
       <SmartInsights insights={dpdInsights} />
@@ -200,7 +202,11 @@ function DpdReconTab() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {dpdRecon.map((row) => (
-                <tr key={row.dpdCount} className={`${row.delta !== 0 ? 'hover:bg-red-50/30 cursor-pointer' : 'hover:bg-slate-50/50'}`}>
+                <tr
+                  key={row.dpdCount}
+                  className={`${row.delta !== 0 ? 'hover:bg-red-50/30 cursor-pointer' : 'hover:bg-slate-50/50'}`}
+                  onClick={row.delta !== 0 ? () => navigateToDpdBreakdown(row.dpdCount) : undefined}
+                >
                   <td className="px-5 py-2.5 font-medium text-slate-700">{row.dpdCount}</td>
                   <td className="px-5 py-2.5 text-right tabular-nums">{row.paytmLms.toLocaleString('en-IN')}</td>
                   <td className="px-5 py-2.5 text-right tabular-nums">{row.lenderFile.toLocaleString('en-IN')}</td>

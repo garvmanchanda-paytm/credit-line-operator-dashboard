@@ -7,12 +7,14 @@ import {
   momBillingInsights,
   dailyDuesCycles,
   dailyDuesInsights,
+  ingestionAlerts,
 } from '../../mockData/billRecon';
 
 const SUB_TABS = [
-  { id: 'billGen', label: 'Bill Gen Recon' },
-  { id: 'mom',     label: 'MoM Lender Billing' },
-  { id: 'dues',    label: 'Daily Dues Recon' },
+  { id: 'billGen',    label: 'Bill Gen Recon' },
+  { id: 'mom',        label: 'MoM Lender Billing' },
+  { id: 'dues',       label: 'Daily Dues Recon' },
+  { id: 'ingestion',  label: 'Ingestion Alerts' },
 ];
 
 function SmartInsights({ insights, onDismiss }) {
@@ -311,6 +313,217 @@ function DuesRecon() {
   );
 }
 
+function IngestionAlerts() {
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  const statusStyle = {
+    SUCCESS: 'text-emerald-700 font-bold',
+    Failed: 'text-red-600 font-bold',
+    Warning: 'text-amber-600 font-bold',
+  };
+
+  const alertBadgeStyle = (alertType) => {
+    if (alertType === 'Healthy') return 'bg-slate-100 text-slate-500';
+    if (['Job Status Inactive', 'Missing Source File', 'Date Mismatch'].includes(alertType)) return 'bg-red-100 text-red-700';
+    return 'bg-amber-100 text-amber-700';
+  };
+
+  const healthColor = (pct) => {
+    if (pct >= 80) return 'text-emerald-600';
+    if (pct >= 50) return 'text-amber-600';
+    return 'text-red-600';
+  };
+
+  const report = selectedReport?.healthReport;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-lg font-bold text-slate-900">Ingestion Alerts</h3>
+        <p className="text-xs text-slate-400 mt-0.5">Monitor daily and monthly SFTP file ingestion and Data Warehouse pipelines.</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100">
+          <h4 className="text-sm font-semibold text-slate-700">Ingestion Alerts</h4>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-50/80 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="text-left px-4 py-2.5">Lender File</th>
+                <th className="text-left px-4 py-2.5">DWH Table</th>
+                <th className="text-center px-4 py-2.5">Frequency</th>
+                <th className="text-left px-4 py-2.5">Last Ingestion</th>
+                <th className="text-left px-4 py-2.5">Active Alert / Diagnostics</th>
+                <th className="text-center px-4 py-2.5">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {ingestionAlerts.map((row) => (
+                <tr
+                  key={row.id}
+                  className="cursor-pointer hover:bg-blue-50/40 transition-colors"
+                  onClick={() => setSelectedReport(row)}
+                >
+                  <td className="px-4 py-3 font-medium text-slate-700">{row.lenderFile}</td>
+                  <td className="px-4 py-3 font-mono text-[10px] text-slate-500">{row.dwhTable}</td>
+                  <td className="px-4 py-3 text-center text-slate-600">{row.frequency}</td>
+                  <td className="px-4 py-3 text-slate-600">{row.lastIngestion}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${alertBadgeStyle(row.alertType)}`}>
+                      {row.alertType}
+                    </span>
+                  </td>
+                  <td className={`px-4 py-3 text-center ${statusStyle[row.status] || ''}`}>
+                    {row.status}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-4 py-2 border-t border-slate-100">
+          <p className="text-[10px] text-slate-400">Click a row to view the full DWH health report.</p>
+        </div>
+      </div>
+
+      {/* Health Report Modal */}
+      {selectedReport && report && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
+              <h3 className="text-sm font-bold text-slate-900">{selectedReport.lenderFile} — Health Report</h3>
+              <button onClick={() => setSelectedReport(null)} className="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              {/* Alert banner */}
+              {report.alertLabel && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-2">
+                    <span className="text-red-500 text-lg mt-0.5">⚠</span>
+                    <div>
+                      <p className="text-sm font-bold text-red-800">{report.alertLabel}</p>
+                      <p className="text-xs text-red-600 mt-0.5">{report.alertDesc}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Overall Health + Status */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="border border-slate-200 rounded-lg p-4 text-center">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Overall Health</p>
+                  <p className={`text-3xl font-bold mt-1 ${healthColor(report.overallHealth)}`}>{report.overallHealth}%</p>
+                </div>
+                <div className="border border-slate-200 rounded-lg p-4 text-center">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Status</p>
+                  <p className={`text-lg font-bold mt-1 ${report.pipelineStatus === 'Active' ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {report.pipelineStatus}
+                  </p>
+                </div>
+              </div>
+
+              {/* Inactivity Reason */}
+              {report.inactivityReason && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-xs font-bold text-red-800">Critical: Inactivity Reason</p>
+                  <p className="text-xs text-red-600 mt-0.5">{report.inactivityReason}</p>
+                </div>
+              )}
+
+              {/* Sync Performance */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Sync Performance</p>
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+                  <div>
+                    <p className="text-[10px] text-slate-400">Sync Delay</p>
+                    <p className="font-semibold text-slate-800">{report.syncDelay}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Last Sync Time</p>
+                    <p className="font-semibold text-slate-800">{report.lastSyncTime}</p>
+                  </div>
+                  {report.datasetMaxDate && (
+                    <>
+                      <div>
+                        <p className="text-[10px] text-slate-400">Dataset Max Date</p>
+                        <p className="font-semibold text-slate-800">{report.datasetMaxDate}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400">Source Max Date</p>
+                        <p className="font-semibold text-slate-800">{report.sourceMaxDate}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Dataset Information */}
+              <div className="bg-amber-50/40 border border-amber-100 rounded-lg p-4">
+                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Dataset Information</p>
+                <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
+                  <div>
+                    <p className="text-[10px] text-slate-400">Dataset ID</p>
+                    <p className="font-semibold text-slate-800 font-mono text-[11px]">{report.datasetId}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Type</p>
+                    <p className="font-semibold text-slate-800">{report.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Vertical</p>
+                    <p className="font-semibold text-slate-800">{report.vertical}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Sub Vertical</p>
+                    <p className="font-semibold text-slate-800">{report.subVertical}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Product SPOC Email</p>
+                    <p className="font-semibold text-slate-800">{report.productSpoc}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Tech SPOC Email</p>
+                    <p className="font-semibold text-slate-800">{report.techSpoc}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">SLO Minutes</p>
+                    <p className="font-semibold text-slate-800">{report.sloMinutes}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Schema Information */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">Schema Information</p>
+                <div className="grid grid-cols-4 gap-3 text-xs text-center">
+                  <div>
+                    <p className="text-[10px] text-slate-400">Total Fields</p>
+                    <p className="text-lg font-bold text-slate-800">{report.totalFields}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Active Fields</p>
+                    <p className="text-lg font-bold text-slate-800">{report.activeFields}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Inactive Fields</p>
+                    <p className="text-lg font-bold text-slate-800">{report.inactiveFields}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400">Schema Health</p>
+                    <p className={`text-lg font-bold ${healthColor(report.schemaHealth)}`}>{report.schemaHealth}%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function BillRecon() {
   const [subTab, setSubTab] = useState('billGen');
 
@@ -335,6 +548,7 @@ export default function BillRecon() {
       {subTab === 'billGen' && <BillGenRecon />}
       {subTab === 'mom' && <MoMBilling />}
       {subTab === 'dues' && <DuesRecon />}
+      {subTab === 'ingestion' && <IngestionAlerts />}
     </div>
   );
 }

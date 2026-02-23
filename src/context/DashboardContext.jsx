@@ -88,6 +88,20 @@ export function DashboardProvider({ children }) {
     setPostOnbTab('spends');
   }, []);
 
+  // DPD breakdown state
+  const [selectedDpdBucket, setSelectedDpdBucket] = useState(null);
+
+  const navigateToDpdBreakdown = useCallback((dpdCount) => {
+    setSelectedDpdBucket(dpdCount);
+    setActiveView('dpdBreakdown');
+  }, []);
+
+  const navigateBackFromDpdBreakdown = useCallback(() => {
+    setSelectedDpdBucket(null);
+    setActiveView('postOnboarding');
+    setPostOnbTab('repayment');
+  }, []);
+
   // Track which view the drill-down was triggered from
   const openDrillDown = useCallback((stage) => {
     setPreviousView((prev) => prev || 'snapshot');
@@ -160,6 +174,9 @@ export function DashboardProvider({ children }) {
         selectedErrorCode,
         navigateToErrorCodeDetail,
         navigateBackFromErrorCodeDetail,
+        selectedDpdBucket,
+        navigateToDpdBreakdown,
+        navigateBackFromDpdBreakdown,
       }}
     >
       {children}

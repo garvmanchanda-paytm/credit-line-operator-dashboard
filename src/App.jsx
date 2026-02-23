@@ -10,6 +10,7 @@ import IssueDetailPage from './pages/IssueDetailPage';
 import LANBreakdownPage from './pages/LANBreakdownPage';
 import Customer360Page from './pages/Customer360Page';
 import ErrorCodeDetailPage from './pages/ErrorCodeDetailPage';
+import DpdBreakdownPage from './pages/DpdBreakdownPage';
 
 const HOME_NAV = {
   id: 'insightLanding',
@@ -146,6 +147,7 @@ const HEADER_MAP = {
   lanBreakdown:   { title: 'Discrepancy Investigation', sub: 'LAN-Level Breakdown — Paytm LMS vs Lender File' },
   customer360:    { title: 'Customer 360', sub: 'Individual LAN — Full Account Detail' },
   errorCodeDetail: { title: 'UPI Error Code — Deep Dive', sub: 'Transaction Logs & 7-Day Trend Analysis' },
+  dpdBreakdown:    { title: 'DPD Discrepancy Investigation', sub: 'LAN-Level DPD Mismatch — Paytm LMS vs Lender File' },
 };
 
 function TopHeader() {
@@ -191,6 +193,7 @@ function MainContent() {
         {activeView === 'lanBreakdown' && <LANBreakdownPage />}
         {activeView === 'customer360' && <Customer360Page />}
         {activeView === 'errorCodeDetail' && <ErrorCodeDetailPage />}
+        {activeView === 'dpdBreakdown' && <DpdBreakdownPage />}
       </div>
     </div>
   );
