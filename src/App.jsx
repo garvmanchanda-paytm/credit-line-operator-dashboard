@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { DashboardProvider, useDashboard } from './context/DashboardContext';
 import SnapshotView from './pages/SnapshotView';
 import DeepdiveView from './pages/DeepdiveView';
@@ -11,6 +12,9 @@ import LANBreakdownPage from './pages/LANBreakdownPage';
 import Customer360Page from './pages/Customer360Page';
 import ErrorCodeDetailPage from './pages/ErrorCodeDetailPage';
 import DpdBreakdownPage from './pages/DpdBreakdownPage';
+import EmergencyView from './pages/EmergencyView';
+import { funnelByLender } from './mockData/funnelMTD';
+import { getFilteredIssues } from './mockData/issueCategories';
 
 const HOME_NAV = {
   id: 'insightLanding',
@@ -73,7 +77,7 @@ const POST_ONB_NAV = {
   ),
 };
 
-function NavButton({ item, activeView, setActiveView }) {
+function NavButton({ item, activeView, setActiveView, badge }) {
   const isActive = activeView === item.id;
   return (
     <button
@@ -83,13 +87,26 @@ function NavButton({ item, activeView, setActiveView }) {
       }`}
     >
       <span className={isActive ? 'text-blue-600' : 'text-slate-400'}>{item.icon}</span>
-      <span className="hidden lg:block">{item.label}</span>
+      <span className="hidden lg:block flex-1 text-left">{item.label}</span>
     </button>
   );
 }
 
 function Sidebar() {
   const { activeView, setActiveView } = useDashboard();
+
+  const funnelRedCount = useMemo(() => {
+    const data = funnelByLender.ALL || [];
+    return data.filter(s => {
+      const delta = s.lmtdCount > 0 ? ((s.count - s.lmtdCount) / s.lmtdCount * 100) : 0;
+      return delta < -5;
+    }).length;
+  }, []);
+
+  const pulseRedCount = useMemo(() => {
+    const issues = getFilteredIssues('all', '7d');
+    return issues.filter(i => i.delta > 5).length;
+  }, []);
 
   return (
     <aside className="w-14 lg:w-48 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col">
@@ -108,7 +125,7 @@ function Sidebar() {
         <div className="my-3 border-t border-slate-200" />
         <div className="hidden lg:block text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-1">Funnel</div>
         {FUNNEL_NAV.map((item) => (
-          <NavButton key={item.id} item={item} activeView={activeView} setActiveView={setActiveView} />
+          <NavButton key={item.id} item={item} activeView={activeView} setActiveView={setActiveView} badge={item.id === 'snapshot' ? funnelRedCount : 0} />
         ))}
 
         <div className="my-3 border-t border-slate-200" />
@@ -117,7 +134,7 @@ function Sidebar() {
 
         <div className="my-3 border-t border-slate-200" />
         <div className="hidden lg:block text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-1">CST</div>
-        <NavButton item={PULSE_NAV} activeView={activeView} setActiveView={setActiveView} />
+        <NavButton item={PULSE_NAV} activeView={activeView} setActiveView={setActiveView} badge={pulseRedCount} />
 
         <div className="my-3 border-t border-slate-200" />
         <div className="hidden lg:block text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-1">Post-Onb</div>
@@ -148,6 +165,7 @@ const HEADER_MAP = {
   customer360:    { title: 'Customer 360', sub: 'Individual LAN — Full Account Detail' },
   errorCodeDetail: { title: 'UPI Error Code — Deep Dive', sub: 'Transaction Logs & 7-Day Trend Analysis' },
   dpdBreakdown:    { title: 'DPD Discrepancy Investigation', sub: 'LAN-Level DPD Mismatch — Paytm LMS vs Lender File' },
+  emergency:       { title: 'Emergency View', sub: 'All RED Signals Across All Pillars — Incident Command' },
 };
 
 function TopHeader() {
@@ -194,6 +212,7 @@ function MainContent() {
         {activeView === 'customer360' && <Customer360Page />}
         {activeView === 'errorCodeDetail' && <ErrorCodeDetailPage />}
         {activeView === 'dpdBreakdown' && <DpdBreakdownPage />}
+        {activeView === 'emergency' && <EmergencyView />}
       </div>
     </div>
   );

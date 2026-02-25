@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { useDashboard } from '../context/DashboardContext';
-import { funnelByLender, LENDER_OPTIONS } from '../mockData/funnelMTD';
+import { funnelByLender } from '../mockData/funnelMTD';
 import { closedByLender } from '../mockData/funnelClosed';
 import { dailyFunnel, lmsdData } from '../mockData/dailyFunnel';
 import VerticalFunnel from '../components/VerticalFunnel';
 import KPIStrip from '../components/KPIStrip';
 import RAGBadge from '../components/RAGBadge';
 import { formatNumber } from '../utils/rag';
+
+const FUNNEL_LENDERS = ['SSFB', 'JANA'];
 
 function generateCommentary(funnelType, data) {
   const first = data[0];
@@ -86,6 +88,8 @@ export default function SnapshotView() {
   const { funnelType, setFunnelType, selectedLender, setSelectedLender } = useDashboard();
   const [localFunnelType, setLocalFunnelType] = useState(funnelType);
 
+  const effectiveLender = FUNNEL_LENDERS.includes(selectedLender) ? selectedLender : 'SSFB';
+
   const handleToggle = (type) => {
     setLocalFunnelType(type);
     setFunnelType(type);
@@ -93,8 +97,8 @@ export default function SnapshotView() {
 
   const mtdData = useMemo(() => {
     const src = localFunnelType === 'open' ? funnelByLender : closedByLender;
-    return src[selectedLender] || src.ALL;
-  }, [localFunnelType, selectedLender]);
+    return src[effectiveLender] || src.SSFB;
+  }, [localFunnelType, effectiveLender]);
 
   const commentary = useMemo(() => generateCommentary(localFunnelType, mtdData), [localFunnelType, mtdData]);
   const lmtdData = useMemo(() => buildLMTDData(mtdData), [mtdData]);
@@ -108,15 +112,19 @@ export default function SnapshotView() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-slate-900">Funnel Health Summary</h2>
           <div className="flex items-center gap-3">
-            <select
-              value={selectedLender}
-              onChange={(e) => setSelectedLender(e.target.value)}
-              className="text-xs border border-slate-200 rounded-lg px-2.5 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {LENDER_OPTIONS.map(l => (
-                <option key={l} value={l}>{l === 'ALL' ? 'All Lenders' : l}</option>
+            <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-0.5">
+              {FUNNEL_LENDERS.map(l => (
+                <button
+                  key={l}
+                  onClick={() => setSelectedLender(l)}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+                    effectiveLender === l ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  {l}
+                </button>
               ))}
-            </select>
+            </div>
             <span className="text-[10px] text-slate-400">Feb 2026 MTD</span>
           </div>
         </div>
@@ -157,16 +165,16 @@ export default function SnapshotView() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 min-h-[340px]">
+          <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 min-h-[420px]">
             <VerticalFunnel data={mtdData} title="Feb MTD" comparisonData={lmtdData} comparisonLabel="vs LMTD" funnelType={localFunnelType} />
           </div>
-          <div className="border border-slate-100 rounded-lg p-3 bg-blue-50/30 min-h-[340px]">
+          <div className="border border-slate-100 rounded-lg p-3 bg-blue-50/30 min-h-[420px]">
             <VerticalFunnel data={lmtdData} title="Jan MTD (LMTD)" comparisonData={mtdData} comparisonLabel="vs MTD" funnelType={localFunnelType} />
           </div>
-          <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 min-h-[340px]">
+          <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 min-h-[420px]">
             <VerticalFunnel data={t1Data} title="T-1 (Yesterday)" comparisonData={lmsdDisplayData} comparisonLabel="vs LMSD" funnelType={localFunnelType} />
           </div>
-          <div className="border border-slate-100 rounded-lg p-3 bg-blue-50/30 min-h-[340px]">
+          <div className="border border-slate-100 rounded-lg p-3 bg-blue-50/30 min-h-[420px]">
             <VerticalFunnel data={lmsdDisplayData} title="LMSD (Last Month Same Day)" comparisonData={t1Data} comparisonLabel="vs T-1" funnelType={localFunnelType} />
           </div>
         </div>

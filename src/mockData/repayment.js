@@ -35,6 +35,46 @@ export const dpdInsights = [
   { type: 'success', label: 'RECONCILED BUCKETS', text: 'DPD buckets 90+ are 100% reconciled for today\'s sync.', action: 'None Required' },
 ];
 
+// ── Day-on-Day Repayment Trend ──
+export const dailyRepaymentTrend = [
+  { date: 'Feb 01', amount: 0.42, count: 4120 },
+  { date: 'Feb 02', amount: 0.38, count: 3860 },
+  { date: 'Feb 03', amount: 0.55, count: 5210 },
+  { date: 'Feb 04', amount: 0.61, count: 5870 },
+  { date: 'Feb 05', amount: 0.72, count: 6540 },
+  { date: 'Feb 06', amount: 0.68, count: 6210 },
+  { date: 'Feb 07', amount: 0.85, count: 7400 },
+  { date: 'Feb 08', amount: 0.91, count: 7980 },
+  { date: 'Feb 09', amount: 0.78, count: 7120 },
+  { date: 'Feb 10', amount: 1.02, count: 8850 },
+  { date: 'Feb 11', amount: 1.12, count: 9410 },
+  { date: 'Feb 12', amount: 0.95, count: 8240 },
+  { date: 'Feb 13', amount: 1.18, count: 9900 },
+  { date: 'Feb 14', amount: 1.25, count: 10320 },
+  { date: 'Feb 15', amount: 1.31, count: 10750 },
+  { date: 'Feb 16', amount: 0.88, count: 7650 },
+  { date: 'Feb 17', amount: 0.76, count: 6830 },
+  { date: 'Feb 18', amount: 1.05, count: 9100 },
+  { date: 'Feb 19', amount: 1.15, count: 9620 },
+  { date: 'Feb 20', amount: 1.22, count: 10200 },
+  { date: 'Feb 21', amount: 1.08, count: 9300 },
+  { date: 'Feb 22', amount: 1.35, count: 11050 },
+];
+
+// ── Unreconciled LAN-level data ──
+export const unreconciledLANs = [
+  { lan: 'LAN-00482901', customerName: 'Ravi Sharma', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 2450, paymentDate: '2026-02-19', mismatchReason: 'Settlement delay' },
+  { lan: 'LAN-00517234', customerName: 'Priya Gupta', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 1800, paymentDate: '2026-02-20', mismatchReason: 'Mandate bounce reversal' },
+  { lan: 'LAN-00539871', customerName: 'Amit Patel', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 3200, paymentDate: '2026-02-18', mismatchReason: 'UTR mismatch' },
+  { lan: 'LAN-00561020', customerName: 'Sneha Reddy', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 1950, paymentDate: '2026-02-21', mismatchReason: 'Settlement delay' },
+  { lan: 'LAN-00583445', customerName: 'Vikram Singh', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 2750, paymentDate: '2026-02-17', mismatchReason: 'NACH return not synced' },
+  { lan: 'LAN-00594812', customerName: 'Meera Joshi', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 2100, paymentDate: '2026-02-20', mismatchReason: 'UTR mismatch' },
+  { lan: 'LAN-00602378', customerName: 'Rahul Verma', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 4100, paymentDate: '2026-02-19', mismatchReason: 'Settlement delay' },
+  { lan: 'LAN-00614590', customerName: 'Anita Das', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 1600, paymentDate: '2026-02-21', mismatchReason: 'Mandate bounce reversal' },
+  { lan: 'LAN-00625103', customerName: 'Karan Mehta', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 2850, paymentDate: '2026-02-18', mismatchReason: 'UTR mismatch' },
+  { lan: 'LAN-00637461', customerName: 'Deepika Nair', paytmStatus: 'Paid', lenderStatus: 'Unpaid', amount: 1450, paymentDate: '2026-02-20', mismatchReason: 'Settlement delay' },
+];
+
 // ── Repayment Snapshot ──
 export const repaymentSnapshot = {
   collectionEfficiency: 82.6,

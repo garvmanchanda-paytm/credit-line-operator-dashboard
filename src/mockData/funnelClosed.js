@@ -28,7 +28,7 @@ function scaleLender(data, factor, convNoise) {
 export const closedByLender = {
   ALL: allLenderData,
   SSFB: scaleLender(allLenderData, 0.62, -0.8),
-  HDFC: scaleLender(allLenderData, 0.38, 1.1),
+  JANA: scaleLender(allLenderData, 0.38, 1.1),
 };
 
 // Default export for backward compatibility

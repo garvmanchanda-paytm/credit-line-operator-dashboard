@@ -21,6 +21,11 @@
 | 1.3 | Feb 22 2026 | Phase 2 — User Pulse (CST Dashboard): Added Section 9 with full taxonomy, L1/L2/L3 view specs, mock data, and component tree. Sidebar updated with "CST" section. DashboardContext extended with User Pulse state. 5 new components + 3 new mock data files. |
 | 1.4 | Feb 22 2026 | Phase 3 — Post-Onboarding Deep Dive (Charter 2): Added Section 10 with 4 tab-sections (Portfolio, Bill Recon, Repayment, Spends). Sidebar updated with "Post-Onb" section. DashboardContext extended with postOnbTab, selectedLanDimension, showEmailModal. 8 new components + 4 new mock data files. Cross-dashboard deep links to User Pulse. |
 | 2.0 | Feb 23 2026 | **MVP Revamp** — Global guidelines applied: (1) Insight Landing Page as unified home; (2) Tapered SVG funnel; (3) Single-lender filtering (ALL/SSFB/HDFC); (4) Disbursement Analysis section; (5) No-pop design — overlays converted to full pages; (6) MD docs per menu in `docs/`; (7) New pages: InsightLandingPage, DisbursementView, StageDetailPage, IssueDetailPage. New mock: disbursement.js. |
+| 2.1 | Feb 25 2026 | **Dashboard Feedback Implementation** — (1) Insight Landing: added lender filter (All Lenders/SSFB/JANA), changed KPIs (removed Funnel leads, added Lead-to-Conversion %, Disbursement Value in Cr), renamed "Alerts & Anomalies" → "Quick Deepdive", reordered: Key Metrics → Cards → Quick Deepdive → System Alerts, all sections filter by lender; (2) Funnel Snapshot: lender filter restricted to SSFB/JANA only (no ALL), replaced "Biggest Drop Stage" with "Key Drop-off Stages" (top 3 MTD vs LMTD deviations), funnel visualization redesigned for readability (horizontal bars, alternating rows, hover tooltips, larger fonts); (3) Disbursement: added lender filter, added Key Analysis section (cross-charter choke points from Funnel/Recon/Repayment/User Pulse), page break separating filtered content from always-visible lender-wise breakdown; (4) Lender rename: HDFC → JANA globally across mock data and UI. |
+| 2.2 | Feb 25 2026 | **Stage Detail Investigation Workspace** — Transformed StageDetailPage into a PM investigation workspace. (R1) Auto-generated Problem Statement Banner for Red/Amber stages showing drop magnitude, primary driver L2, and daily user impact; (R2) L2 Contribution Bars with horizontal delta-proportional bars and "Primary Driver" badge on worst L2; (R3) Auto-Surfaced L3 panel for worst L2 (delta < -0.3pp) split into System Issues vs User Behavior Issues with impact chain labels; (R4) Hypothesis Workspace with structured cards (root cause dropdown, confidence radio, evidence multi-select auto-populated from page data, status tracking) persisted to localStorage; (R5) Next Action Planner replacing AnnotationBox with structured form (action type, owner, target date, ticket link, notes) persisted to localStorage; (R6) Investigation Log — collapsible reverse-chronological timeline of all hypothesis and action entries. |
+| 2.3 | Feb 25 2026 | **Issue Detail — Cohort PM Workspace** — Transformed IssueDetailPage into a structured PM investigation workspace for behavioural signals. (R1) Cohort Signal Summary Banner auto-scans all dimensions for segments with delta > 2pp, groups repeating insightTrigger themes, and renders a contextual alert with key segments and suggested starting hypothesis; (R2) Cross-Cohort Pattern Panel shows ranked segments elevated across multiple dimensions with combined signal strength badge (Strong/Moderate/Weak); (R3) Hypothesis Workspace with pre-fills — new hypotheses auto-populate root cause category, detail, target segment, and evidence from cohort signals, with "Suggested from N cohort signals" badge; (R4) SOP Selector replaces generic Next Action Planner — 6 predefined response playbooks (Communication fix, Product/UX change, Pricing review, Ops intervention, Monitor, Escalate to leadership) with fillable templates (affected segment, proposed action, owner, target date, success metric); (R5) Investigation Log persisted under `log_issue_[issueId]` with reverse-chronological timeline of hypothesis saves and SOP saves. |
+| 2.4 | Feb 25 2026 | **Repayment & User Pulse Feedback** — (1) Repayment Snapshot: replaced empty "Quick Filters" with "Repayment Timeline" showing day-on-day trendline chart (22 data points); Unreconciled Repayments card now clickable → opens full-page LAN-level investigation table with status badges, email escalation; added `dailyRepaymentTrend` and `unreconciledLANs` mock data to `repayment.js`. (2) User Pulse IssueOverview table: added charter filter dropdown (All/Onboarding/Post-Onboarding) on Charter column header; added sortable % Share column (cycles ↕/↓/↑); removed 7-Day sparkline column; Delta column now shows MTD vs LMTD percentage difference. |
+| 3.0 | Feb 25 2026 | **Engagement & Intelligence Roadmap (P1–P4)** — (P1) Daily Hooks: sidebar RED badges per section, T-1 delta on homepage KPIs, alert→investigation routing with CTA; (P2) Memory: Watch List (bookmark + pinned strip, max 6, localStorage), Issue Resolution Status badges on User Pulse table, Daily Brief section ("Today vs Yesterday"); (P3) Pressure: WoW toggle on time filters, Hypothesis Metrics Strip (Open/Confirmed/Resolved counts), Emergency View (all RED signals cross-pillar); (P4) Intelligence: Correlation Timeline (cross-pillar event axis), Cross-Pillar Hypothesis (evidence from any pillar). |
 
 ---
 
@@ -114,16 +119,20 @@ Three RAG-badged commentary lines at the top of the page providing an instant ex
 
 #### 3.1.2 KPI Strip — Key Metrics
 
+3 metric cards + 1 Key Drop-off section:
+
 | KPI Card | Primary Value | Comparison | RAG Logic |
 |----------|--------------|------------|-----------|
-| App Loads (MTD) | 5,871,842 | vs Jan: −23.1% | Red if >5% drop MoM; Amber if 2–5% |
+| Landing Page Views (MTD) / Started (MTD) | 5,871,842 | vs Jan: −23.1% | Red if >5% drop MoM; Amber if 2–5% |
 | Overall Conversion (App Load → Closed) | 1.04% | vs Jan: 0.95% | Green if improving; Red if drops >10 bps |
 | Leads Closed (MTD) | 61,029 | vs Jan: −15.5% | Red if >10% drop MoM |
-| Biggest Drop Stage | BRE Complete: 34.3% | vs Jan: 34.9% | Always shows worst-converting stage label |
+
+**Key Drop-off Stages** (separate card below metrics):
+Shows the top 3 stages with highest negative deviation (MTD step conversion − LMTD step conversion). Each entry shows stage name, MTD conv vs LMTD conv, and delta in pp (color-coded). Replaces the previous single "Biggest Drop Stage" card.
 
 #### 3.1.3 2x2 Funnel Comparison Grid
 
-A four-panel grid showing vertical tapered funnel visualisations. Each funnel is a compact vertical stack of centered, proportionally-sized bars (widest at top, narrowing toward bottom). Bars are RAG-color-coded and show count + step conversion %. An **Open Funnel / Closed Funnel** toggle sits on the funnel card header.
+A four-panel grid showing funnel visualisations. Each funnel uses horizontal gradient bars with proportional widths (widest at top, narrowing toward bottom), alternating row backgrounds, and hover tooltips for improved readability. Bars are RAG-color-coded and show count + step conversion % + delta vs comparison. An **Open Funnel / Closed Funnel** toggle sits on the funnel card header. On the Snapshot page, only SSFB and JANA lenders are selectable (no ALL).
 
 | Position | Funnel | Description |
 |----------|--------|-------------|
@@ -157,33 +166,49 @@ A full-width table with an **Open Funnel / Closed Funnel** toggle on the card he
 
 Clicking any row opens the Drill-Down Panel (Section 3.3) for that stage.
 
-### 3.3 Drill-Down Panel (Slide-In, Right Side)
+### 3.3 Stage Detail — Investigation Workspace (Full Page)
 
-Reached by clicking any stage in the Snapshot funnels or the Deepdive table. Opens as a slide-in panel from the right. Design principle: surface the signal, not the noise.
+Reached by clicking any stage in the Snapshot funnels or the Deepdive table. Opens as a full page (no popup). Design principle: PM arrives, understands the problem, drills to root cause, logs a hypothesis, and exits with an assigned action.
 
 #### 3.3.1 Breadcrumb + Stage Header
 
-Shows: Dashboard / Feb 2026 / [Stage Name]. Stage header displays current conversion rate and a RAG badge.
+Shows: Dashboard / Funnel / [Stage Name]. Stage header displays MTD count, current conversion rate, and a RAG badge.
 
-#### 3.3.2 7-Day Mini Trend
+#### 3.3.2 Problem Statement Banner (R1)
 
-A small line chart showing the stage's daily conversion rate for the last 7 days.
+Auto-generated one-line problem statement when stage RAG is Red or Amber. Format: "[Stage] dropped X.Xpp vs LMTD. Primary driver: [worst L2 by delta]. ~N users/day affected." Impact estimate = MTD count x |delta| / 100 / 22. Hidden for Green stages.
 
-#### 3.3.3 API Health Cards
+#### 3.3.3 Auto-Generated Summary
 
-Three cards showing: Success Rate, Latency (p50/p95), and Error Rates (4xx/5xx) for the stage's underlying API.
+Four insight lines covering: 7-day trend direction, top L2 contributor, API health status, and L3 error trends.
 
-#### 3.3.4 L2 Sub-Stage Table
+#### 3.3.4 7-Day Mini Trend
 
-Status badge logic: Red = sub-stage failure rate >2x historical average; Amber = 1.5x-2x; Green = normal. For the SELFIE_CAPTURED stage, an additional **Liveliness Error Breakdown** panel appears showing ranked selfie error types with visual bars and DoD trends.
+A line chart showing the stage's daily conversion rate for the last 7 days.
 
-#### 3.3.5 L3 Error Summary
+#### 3.3.5 L2 Contribution Bars (R2)
 
-Pre-aggregated, ranked error summaries — not raw logs. Each error shows: code, description, count, % of failures, and trend vs yesterday (stable/up/down/alert). A "Open in Kibana" deep-link button is available but not the default view.
+Horizontal delta-proportional bars for each L2 sub-stage. Red bars for negative delta, green for positive. The worst negative-delta L2 is highlighted with a "Primary Driver" badge and border. Columns: Sub-Stage, MTD Count, MTD%, LMTD%, Delta.
 
-#### 3.3.6 Annotation Box
+#### 3.3.6 L2 Sub-Stage Table
 
-A textarea where the PM can leave a note about the stage (e.g., "Bureau API had downtime 12:00-14:00 on Feb 19"). Saved to localStorage on blur. Phase 2 will persist to a database.
+Expandable rows with API health and L3 errors inside each expand. For SELFIE_CAPTURED stage, includes Liveliness Error Breakdown.
+
+#### 3.3.7 Auto-Surfaced L3 Panel (R3)
+
+When any L2 has delta worse than -0.3pp, the worst L2's L3 errors are auto-expanded. Errors split into "System Issues" (API timeout, 5xx, rate limit) and "User Behavior Issues" (selfie unclear, etc.). Each error shows an impact chain label: "This error contributes X% to [L2] failures."
+
+#### 3.3.8 Hypothesis Workspace (R4)
+
+PM can create multiple competing hypothesis cards. Each card has: root cause category (dropdown: API Degradation / User Behavior / Config Change / External Factor / Data Issue), detail text, confidence (High/Medium/Low), evidence (multi-select checklist auto-populated from L2 deltas, L3 error trends, and API health flags), and status (Draft / Under Investigation / Confirmed / Ruled Out). Persisted to localStorage under `hypothesis_[stage]`.
+
+#### 3.3.9 Next Action Planner (R5)
+
+Replaces the old Annotation Box. Structured form with: Action type (Raise Eng ticket / Product/UX change / Ops investigation / Monitor / Escalate), Owner, Target date, Ticket link, Notes. Persisted to localStorage under `action_[stage]`. Each save appends to the Investigation Log.
+
+#### 3.3.10 Investigation Log (R6)
+
+Collapsible reverse-chronological timeline at the bottom. Shows all hypothesis saves (with status) and action saves with type badge, summary, and timestamp. Persisted in localStorage under `log_[stage]`.
 
 ---
 
@@ -254,7 +279,7 @@ PMs can annotate anomalies inline. Stored in localStorage (Phase 1).
 | Charts | Recharts | Used for mini-trend in drill-down panel. Funnel charts are custom CSS. |
 | Styling | Tailwind CSS | Utility-first, responsive breakpoints |
 | State | React useState / useContext | DashboardContext manages activeView, funnelType, selectedMonth, drillDownStage, pulseTimeWindow, charterFilter, selectedIssue, selectedCohort, postOnbTab, selectedLanDimension, showEmailModal |
-| Data | Hardcoded .js data files | 13 mock data modules in `src/mockData/` (6 funnel + 3 User Pulse + 4 Post-Onboarding) |
+| Data | Hardcoded .js data files | 16 mock data modules in `src/mockData/` (6 funnel + 3 User Pulse + 4 Post-Onboarding + disbursement + systemAlerts + errorCodeDetails in spends) |
 | Navigation | Sidebar state (no routing) | `activeView` in context switches between Snapshot, Deepdive, User Pulse, and Post-Onboarding. `react-router-dom` still a dependency but unused. |
 
 ### 6.2 Component Structure (Current)
@@ -271,11 +296,19 @@ src/
     DeepdiveView.jsx                # Tabular MTD funnel with LMTD comparison
     UserPulseView.jsx               # [Phase 2] User Pulse parent: filters + IssueOverview + CohortPanel
     PostOnboardingView.jsx          # [Phase 3] Post-Onboarding parent: sub-tab bar + 4 sections
+    InsightLandingPage.jsx          # Unified home: lender filter + 5 KPIs + section cards + Quick Deepdive + System Alerts
+    DisbursementView.jsx            # Disbursement analysis: lender filter + KPIs + trend + Key Analysis + failure + lender breakdown
+    StageDetailPage.jsx             # Full-page L2 drill-down for funnel stages
+    IssueDetailPage.jsx             # Cohort PM Workspace — signal banner, cross-cohort patterns, hypothesis workspace with pre-fills, SOP selector, investigation log
+    LANBreakdownPage.jsx            # Full-page LAN-level breakdown for Bill Recon mismatches
+    Customer360Page.jsx             # Full-page customer 360 detail view
+    ErrorCodeDetailPage.jsx         # Full-page L2 drill-down for UPI error codes
+    DpdBreakdownPage.jsx            # Full-page DPD LAN-level discrepancy breakdown
     FunnelOverview.jsx              # (legacy) Original horizontal bar overview
     TrendView.jsx                   # (legacy) Multi-line trend chart with annotations
   components/
-    VerticalFunnel.jsx              # Compact vertical tapered funnel for 2x2 grid
-    KPIStrip.jsx                    # 4 KPI cards with RAG badges
+    VerticalFunnel.jsx              # Horizontal bar funnel with hover tooltips for 2x2 grid
+    KPIStrip.jsx                    # 3 KPI cards + Key Drop-off Stages section with RAG badges
     DrillDownPanel.jsx              # Slide-in right panel (L2 + L3 + API health + trend)
     SubStageTable.jsx               # L2 sub-stage table with status badges
     StageSummary.jsx                # Auto-generated insights for L1 stage health
@@ -312,7 +345,9 @@ src/
     portfolio.js                    # [Phase 3] MoM metrics, KPIs, loan status, transacting user breakdown
     billRecon.js                    # [Phase 3] Recon snapshot dimensions + LAN-level delta rows
     repayment.js                    # [Phase 3] Dues, MoM repayment, DPD buckets, paid/partial/unpaid
-    spends.js                       # [Phase 3] Daily SR, error codes, MoM GMV/txn count
+    spends.js                       # [Phase 3] Daily SR, error codes, MoM GMV/txn count, errorCodeDetails for L2 pages
+    disbursement.js                 # Disbursement KPIs, daily trend, lender breakdown, failure reasons
+    systemAlerts.js                 # Live API & funnel alerts with logs, trends, and impact data
   utils/
     rag.js                          # RAG threshold functions, formatNumber, formatDelta
 ```
@@ -343,7 +378,7 @@ Working React prototype with mock data seeded from Feb-26 and Jan-26 Excel sheet
 - [x] DashboardContext with activeView, funnelType, selectedMonth, drillDownStage
 - [x] **Snapshot view**: 3-line RAG commentary + 4 KPI cards + 2x2 vertical funnel grid
 - [x] **Deepdive view**: Full tabular MTD funnel with LMTD comparison, Open/Closed toggle, click-to-drill-down
-- [x] **Vertical funnel component**: Compact tapered bars, RAG-colored, proportional widths, conversion labels
+- [x] **Vertical funnel component**: Horizontal gradient bars with alternating rows, hover tooltips, RAG-colored, proportional widths, conversion labels + deltas
 - [x] **Drill-Down Panel**: Slide-in from right with breadcrumb, 7-day mini trend, API health cards, L2 sub-stage table, L3 error summary, annotation box
 - [x] **Selfie error breakdown**: Special liveliness error sub-view with ranked bars and DoD trends
 - [x] RAG badge component + threshold utility functions

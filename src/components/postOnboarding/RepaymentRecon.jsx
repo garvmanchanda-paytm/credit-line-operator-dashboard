@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useDashboard } from '../../context/DashboardContext';
 import {
   duesSnapshot,
@@ -8,6 +8,7 @@ import {
   dpdInsights,
   paidBreakdown,
   repaymentSnapshot,
+  dailyRepaymentTrend,
 } from '../../mockData/repayment';
 
 const DONUT_COLORS = ['#22c55e', '#f59e0b', '#ef4444'];
@@ -46,12 +47,21 @@ function SmartInsights({ insights }) {
 }
 
 function RepaymentSnapshotTab() {
+  const { navigateToLanBreakdown } = useDashboard();
   const snap = repaymentSnapshot;
   const fmtCr = (v) => `₹${(v / 10000000).toFixed(2)} Cr`;
   const fmtL = (v) => `₹${(v / 100000).toFixed(2)} L`;
 
   const [selectedMonth] = useState('Feb');
   const [selectedYear] = useState('2026');
+
+  const handleUnreconClick = () => {
+    navigateToLanBreakdown({
+      type: 'repaymentUnrecon',
+      dimension: 'Unreconciled Repayments',
+      title: 'Unreconciled Repayments — LAN-level Investigation',
+    });
+  };
 
   return (
     <div className="space-y-5">
@@ -88,7 +98,7 @@ function RepaymentSnapshotTab() {
         </div>
       </div>
 
-      {/* Contribution by Mode + Quick Filters */}
+      {/* Contribution by Mode + Repayment Timeline */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <h4 className="text-sm font-semibold text-slate-700 mb-4">Repayment Contribution by Mode</h4>
@@ -124,9 +134,26 @@ function RepaymentSnapshotTab() {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <h4 className="text-sm font-semibold text-slate-700 mb-2">Quick filters</h4>
-          <p className="text-xs text-slate-400 mb-4">Click any KPI card below to open the detailed data table for that metric.</p>
-          <div className="text-center text-xs text-slate-400 py-6">Filter actions available on KPI cards below</div>
+          <h4 className="text-sm font-semibold text-slate-700 mb-1">Repayment Timeline</h4>
+          <p className="text-[11px] text-slate-400 mb-3">Day-on-day repayment trend (₹ Cr)</p>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dailyRepaymentTrend} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} interval={3} />
+                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
+                <Tooltip
+                  contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #e2e8f0' }}
+                  formatter={(value, name) => {
+                    if (name === 'amount') return [`₹${value} Cr`, 'Amount'];
+                    return [value.toLocaleString(), 'Txn Count'];
+                  }}
+                  labelStyle={{ fontWeight: 600, fontSize: 11 }}
+                />
+                <Line type="monotone" dataKey="amount" stroke="#22c55e" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#22c55e' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -140,15 +167,19 @@ function RepaymentSnapshotTab() {
         <KpiCard icon="⏳" label="Partial Repayment" value={snap.partialRepayment.toLocaleString('en-IN')} accent="amber" />
       </div>
 
-      {/* Unreconciled Delta */}
-      <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4">
+      {/* Unreconciled Delta — clickable → LAN-level view */}
+      <div
+        onClick={handleUnreconClick}
+        className="bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-4 cursor-pointer hover:bg-amber-100/60 transition-colors group"
+      >
         <div className="flex items-start gap-3">
           <span className="text-2xl">⚠</span>
-          <div>
+          <div className="flex-1">
             <p className="text-sm font-bold text-amber-800">Unreconciled Repayments (Delta)</p>
             <p className="text-3xl font-bold text-amber-700 mt-1">{snap.unreconciledDelta}</p>
-            <p className="text-xs text-amber-600 mt-1">Paytm says paid, Lender file mismatch — click to investigate</p>
+            <p className="text-xs text-amber-600 mt-1">Paytm says paid, Lender file mismatch — <span className="font-semibold underline group-hover:text-amber-800">click to investigate</span></p>
           </div>
+          <span className="text-amber-400 group-hover:text-amber-600 text-lg mt-1">→</span>
         </div>
       </div>
     </div>

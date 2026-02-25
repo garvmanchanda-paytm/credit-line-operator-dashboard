@@ -1,0 +1,15 @@
+export const crossPillarEvents = [
+  { date: 'Feb 10', pillar: 'funnel', text: 'SELFIE_CAPTURED conversion dropped 4.2pp', severity: 'warning' },
+  { date: 'Feb 11', pillar: 'cst', text: 'VKYC_INITIATED tickets spiked +18%', severity: 'warning' },
+  { date: 'Feb 12', pillar: 'alert', text: 'KYC liveness-check API 502 rate at 12%', severity: 'critical' },
+  { date: 'Feb 13', pillar: 'funnel', text: 'BRE_COMPLETED count recovered to baseline', severity: 'info' },
+  { date: 'Feb 14', pillar: 'disbursement', text: 'Daily disbursement count down 8% vs avg', severity: 'warning' },
+  { date: 'Feb 15', pillar: 'cst', text: 'Deactivation requests up 15.5% MTD vs LMTD', severity: 'critical' },
+  { date: 'Feb 16', pillar: 'funnel', text: 'MANDATE_SUCCESS dropped 3.1pp', severity: 'warning' },
+  { date: 'Feb 17', pillar: 'alert', text: 'Bureau credit-pull p95 latency spiked to 8.4s', severity: 'warning' },
+  { date: 'Feb 18', pillar: 'funnel', text: 'APPLICATION_LOADED dropped 44% (weekend effect)', severity: 'critical' },
+  { date: 'Feb 19', pillar: 'cst', text: 'Charges & Interest queries up 11.1% MTD vs LMTD', severity: 'warning' },
+  { date: 'Feb 20', pillar: 'disbursement', text: 'SSFB disbursement TAT increased to 6.2 hrs', severity: 'warning' },
+  { date: 'Feb 21', pillar: 'alert', text: 'ESIGN → CREDIT_LINE_ACTIVATION conversion at 78.1%', severity: 'critical' },
+  { date: 'Feb 22', pillar: 'funnel', text: 'LEAD_SUCCESSFULLY_CLOSED count at 2,490 (below avg)', severity: 'warning' },
+];

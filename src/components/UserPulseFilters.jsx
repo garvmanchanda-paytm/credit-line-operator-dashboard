@@ -3,6 +3,7 @@ import { useDashboard } from '../context/DashboardContext';
 const TIME_OPTIONS = [
   { id: 't-1', label: 'T-1' },
   { id: '7d', label: 'Last 7 Days' },
+  { id: 'wow', label: 'WoW' },
   { id: '15d', label: 'Last 15 Days' },
   { id: '30d', label: 'Last 30 Days' },
 ];
@@ -13,8 +14,14 @@ const CHARTER_OPTIONS = [
   { id: 'post-onboarding', label: 'Post-Onboarding' },
 ];
 
+const LENDER_OPTIONS = [
+  { id: 'ALL', label: 'All Lenders' },
+  { id: 'SSFB', label: 'SSFB' },
+  { id: 'JANA', label: 'JANA' },
+];
+
 export default function UserPulseFilters() {
-  const { pulseTimeWindow, setPulseTimeWindow, charterFilter, setCharterFilter } = useDashboard();
+  const { pulseTimeWindow, setPulseTimeWindow, charterFilter, setCharterFilter, selectedLender, setSelectedLender } = useDashboard();
 
   return (
     <div className="flex flex-wrap items-center gap-4 mb-5">
@@ -46,6 +53,25 @@ export default function UserPulseFilters() {
             className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
               charterFilter === opt.id
                 ? 'bg-violet-600 text-white shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="h-5 w-px bg-slate-200" />
+
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs font-medium text-slate-500 mr-1">Lender</span>
+        {LENDER_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            onClick={() => setSelectedLender(opt.id)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
+              selectedLender === opt.id
+                ? 'bg-emerald-600 text-white shadow-sm'
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >

@@ -11,7 +11,7 @@ export const disbursementKPIs = {
 
 export const lenderBreakdown = [
   { lender: 'SSFB', count: 2847, amountCr: 15.9, avgTAT: 16.4, failureRate: 4.2 },
-  { lender: 'HDFC', count: 1533, amountCr: 8.6,  avgTAT: 21.5, failureRate: 7.8 },
+  { lender: 'JANA', count: 1533, amountCr: 8.6,  avgTAT: 21.5, failureRate: 7.8 },
 ];
 
 export const dailyDisbursement = (() => {

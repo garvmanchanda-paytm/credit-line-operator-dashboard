@@ -124,6 +124,7 @@ export const issueCategories = [
 const TIME_FACTORS = {
   't-1': 1,
   '7d': 7,
+  'wow': 7,
   '15d': 15,
   '30d': 22,
 };

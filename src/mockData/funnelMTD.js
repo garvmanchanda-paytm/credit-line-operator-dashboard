@@ -27,10 +27,10 @@ function scaleLender(data, factor, convNoise) {
 export const funnelByLender = {
   ALL: allLenderData,
   SSFB: scaleLender(allLenderData, 0.65, -1.2),
-  HDFC: scaleLender(allLenderData, 0.35, 0.8),
+  JANA: scaleLender(allLenderData, 0.35, 0.8),
 };
 
-export const LENDER_OPTIONS = ['ALL', 'SSFB', 'HDFC'];
+export const LENDER_OPTIONS = ['ALL', 'SSFB', 'JANA'];
 
 // Default export for backward compatibility
 export const funnelMTD = allLenderData;

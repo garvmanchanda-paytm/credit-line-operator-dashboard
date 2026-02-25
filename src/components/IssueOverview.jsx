@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useDashboard } from '../context/DashboardContext';
 import { getFilteredIssues } from '../mockData/issueCategories';
 
@@ -14,28 +14,62 @@ function getRag(delta) {
   return { color: 'bg-emerald-100 text-emerald-700', label: 'GREEN' };
 }
 
-function Sparkline({ data }) {
-  return (
-    <div className="w-16 h-6">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data.map((v, i) => ({ d: i, v }))}>
-          <Line type="monotone" dataKey="v" stroke="#6366f1" strokeWidth={1.5} dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
+const STATUS_OPTIONS = ['all', 'RED', 'AMBER', 'GREEN'];
+const CHARTER_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'onboarding', label: 'Onboarding' },
+  { value: 'post-onboarding', label: 'Post-Onboarding' },
+];
+
+function getInvestigationStatus(issueId) {
+  try {
+    const hyps = JSON.parse(localStorage.getItem(`hypothesis_issue_${issueId}`) || '[]');
+    const sops = JSON.parse(localStorage.getItem(`sop_issue_${issueId}`) || '[]');
+    const hasInvestigating = hyps.some(h => h.status === 'Under Investigation');
+    const hasConfirmed = hyps.some(h => h.status === 'Confirmed');
+    if (sops.length > 0) return { badge: 'Action Taken', color: 'bg-emerald-100 text-emerald-700' };
+    if (hasConfirmed) return { badge: 'Confirmed', color: 'bg-blue-100 text-blue-700' };
+    if (hasInvestigating) return { badge: 'Investigating', color: 'bg-purple-100 text-purple-700' };
+    if (hyps.length > 0) return { badge: 'Draft', color: 'bg-slate-100 text-slate-600' };
+    return { badge: null, color: '' };
+  } catch { return { badge: null, color: '' }; }
 }
 
-const STATUS_OPTIONS = ['all', 'RED', 'AMBER', 'GREEN'];
-
 export default function IssueOverview() {
-  const { charterFilter, pulseTimeWindow, openIssuePanel } = useDashboard();
+  const { charterFilter, pulseTimeWindow, openIssuePanel, selectedLender } = useDashboard();
   const [statusFilter, setStatusFilter] = useState('all');
+  const [tableCharterFilter, setTableCharterFilter] = useState('all');
+  const [shareSort, setShareSort] = useState(null);
+  const [watchlist, setWatchlist] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('pm_watchlist') || '[]'); } catch { return []; }
+  });
 
-  const issues = useMemo(
-    () => getFilteredIssues(charterFilter, pulseTimeWindow),
-    [charterFilter, pulseTimeWindow]
-  );
+  const lenderScale = selectedLender === 'SSFB' ? 0.62 : selectedLender === 'JANA' ? 0.38 : 1;
+
+  const isWatched = (id) => watchlist.some(w => w.id === id);
+  const toggleWatch = (issue) => {
+    let next;
+    if (isWatched(issue.id)) {
+      next = watchlist.filter(w => w.id !== issue.id);
+    } else {
+      if (watchlist.length >= 6) return;
+      next = [...watchlist, { id: issue.id, type: 'issue', name: issue.subCategory, delta: issue.delta, rag: getRag(issue.delta).label === 'RED' ? 'red' : getRag(issue.delta).label === 'AMBER' ? 'amber' : 'green' }];
+    }
+    setWatchlist(next);
+    localStorage.setItem('pm_watchlist', JSON.stringify(next));
+    window.dispatchEvent(new Event('watchlist-updated'));
+  };
+
+  const issues = useMemo(() => {
+    const base = getFilteredIssues(charterFilter, pulseTimeWindow);
+    if (lenderScale === 1) return base;
+    return base.map(i => ({
+      ...i,
+      windowCount: Math.round(i.windowCount * lenderScale),
+      prevWindowCount: Math.round(i.prevWindowCount * lenderScale),
+      mtdCount: Math.round(i.mtdCount * lenderScale),
+    }));
+  }, [charterFilter, pulseTimeWindow, lenderScale]);
 
   const totalTickets = useMemo(() => issues.reduce((s, i) => s + i.windowCount, 0), [issues]);
   const topIssue = issues[0];
@@ -47,6 +81,26 @@ export default function IssueOverview() {
     issues.forEach((issue) => { row[issue.id] = issue.windowPctShare; });
     return [row];
   }, [issues]);
+
+  const filteredAndSorted = useMemo(() => {
+    let result = issues.filter(issue => {
+      if (statusFilter !== 'all' && getRag(issue.delta).label !== statusFilter) return false;
+      if (tableCharterFilter !== 'all') {
+        if (tableCharterFilter === 'onboarding') return issue.charter === 'onboarding' || issue.charter === 'both';
+        return issue.charter === 'post-onboarding' || issue.charter === 'both';
+      }
+      return true;
+    });
+    if (shareSort === 'asc') result = [...result].sort((a, b) => a.windowPctShare - b.windowPctShare);
+    else if (shareSort === 'desc') result = [...result].sort((a, b) => b.windowPctShare - a.windowPctShare);
+    return result;
+  }, [issues, statusFilter, tableCharterFilter, shareSort]);
+
+  const toggleShareSort = () => {
+    setShareSort(prev => prev === null ? 'desc' : prev === 'desc' ? 'asc' : null);
+  };
+
+  const shareSortIcon = shareSort === 'desc' ? '↓' : shareSort === 'asc' ? '↑' : '↕';
 
   return (
     <div className="space-y-5">
@@ -128,11 +182,31 @@ export default function IssueOverview() {
                 <th className="text-left px-4 py-2.5 font-medium">#</th>
                 <th className="text-left px-4 py-2.5 font-medium">Category</th>
                 <th className="text-left px-4 py-2.5 font-medium">Sub-Category</th>
-                <th className="text-center px-4 py-2.5 font-medium">Charter</th>
+                <th className="text-center px-4 py-2.5 font-medium">
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Charter</span>
+                    <select
+                      value={tableCharterFilter}
+                      onChange={(e) => { e.stopPropagation(); setTableCharterFilter(e.target.value); }}
+                      className="text-[10px] bg-transparent border border-slate-300 rounded px-1 py-0.5 text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer"
+                    >
+                      {CHARTER_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
                 <th className="text-right px-4 py-2.5 font-medium">Tickets</th>
-                <th className="text-right px-4 py-2.5 font-medium">% Share</th>
-                <th className="text-center px-4 py-2.5 font-medium">7-Day</th>
-                <th className="text-right px-4 py-2.5 font-medium">Delta</th>
+                <th className="text-right px-4 py-2.5 font-medium">
+                  <button
+                    onClick={toggleShareSort}
+                    className="inline-flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    % Share <span className="text-[10px]">{shareSortIcon}</span>
+                  </button>
+                </th>
+                <th className="text-right px-4 py-2.5 font-medium">Delta (MTD vs LMTD)</th>
+                <th className="text-center px-4 py-2.5 font-medium">Investigation</th>
                 <th className="text-center px-4 py-2.5 font-medium">
                   <div className="flex items-center justify-center gap-1">
                     <span>Status</span>
@@ -147,14 +221,17 @@ export default function IssueOverview() {
                     </select>
                   </div>
                 </th>
+                <th className="text-center px-4 py-2.5 font-medium w-8"></th>
               </tr>
             </thead>
             <tbody>
-              {issues.filter(issue => {
-                if (statusFilter === 'all') return true;
-                return getRag(issue.delta).label === statusFilter;
-              }).map((issue, idx) => {
+              {filteredAndSorted.map((issue, idx) => {
                 const rag = getRag(issue.delta);
+                const mtdLmtdDelta = issue.windowCount - issue.prevWindowCount;
+                const mtdLmtdPct = issue.prevWindowCount > 0
+                  ? ((mtdLmtdDelta / issue.prevWindowCount) * 100).toFixed(1)
+                  : 0;
+                const invStatus = getInvestigationStatus(issue.id);
                 return (
                   <tr
                     key={issue.id}
@@ -175,14 +252,24 @@ export default function IssueOverview() {
                     </td>
                     <td className="px-4 py-2.5 text-right font-semibold text-slate-800">{issue.windowCount.toLocaleString()}</td>
                     <td className="px-4 py-2.5 text-right text-slate-600">{issue.windowPctShare}%</td>
-                    <td className="px-4 py-2.5">
-                      <div className="flex justify-center"><Sparkline data={issue.dailyCounts} /></div>
+                    <td className={`px-4 py-2.5 text-right font-semibold ${Number(mtdLmtdPct) > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                      {Number(mtdLmtdPct) > 0 ? '+' : ''}{mtdLmtdPct}%
                     </td>
-                    <td className={`px-4 py-2.5 text-right font-semibold ${issue.delta > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                      {issue.delta > 0 ? '+' : ''}{issue.delta}%
+                    <td className="px-4 py-2.5 text-center">
+                      {invStatus.badge && <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${invStatus.color}`}>{invStatus.badge}</span>}
+                      {!invStatus.badge && <span className="text-[10px] text-slate-300">—</span>}
                     </td>
                     <td className="px-4 py-2.5 text-center">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${rag.color}`}>{rag.label}</span>
+                    </td>
+                    <td className="px-4 py-2.5 text-center">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleWatch(issue); }}
+                        className={`text-sm transition-colors ${isWatched(issue.id) ? 'text-amber-500' : 'text-slate-300 hover:text-amber-400'}`}
+                        title={isWatched(issue.id) ? 'Remove from watchlist' : 'Add to watchlist'}
+                      >
+                        {isWatched(issue.id) ? '★' : '☆'}
+                      </button>
                     </td>
                   </tr>
                 );

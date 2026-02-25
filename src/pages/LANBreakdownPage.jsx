@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import { lanBreakdownBillGen, lanBreakdownDailyDues } from '../mockData/billRecon';
+import { unreconciledLANs } from '../mockData/repayment';
 
 export default function LANBreakdownPage() {
   const { lanBreakdownConfig, navigateBackFromLanBreakdown, navigateToCustomer360 } = useDashboard();
@@ -9,8 +10,13 @@ export default function LANBreakdownPage() {
   const [showEmailModal, setShowEmailModal] = useState(false);
 
   const config = lanBreakdownConfig || {};
+  const isRepaymentUnrecon = config.type === 'repaymentUnrecon';
   const isDailyDues = config.type === 'dailyDues';
-  const rawData = isDailyDues ? lanBreakdownDailyDues : lanBreakdownBillGen;
+  const rawData = isRepaymentUnrecon ? unreconciledLANs : (isDailyDues ? lanBreakdownDailyDues : lanBreakdownBillGen);
+
+  if (isRepaymentUnrecon) {
+    return <RepaymentUnreconView config={config} rawData={rawData} navigateBackFromLanBreakdown={navigateBackFromLanBreakdown} navigateToCustomer360={navigateToCustomer360} />;
+  }
 
   const rows = useMemo(() => {
     if (!search) return rawData;
@@ -266,6 +272,150 @@ function EscalateModal({ selected, rows, config, onClose, onSend }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function RepaymentUnreconView({ config, rawData, navigateBackFromLanBreakdown, navigateToCustomer360 }) {
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(new Set());
+  const [showEmailModal, setShowEmailModal] = useState(false);
+
+  const rows = useMemo(() => {
+    if (!search) return rawData;
+    const q = search.toLowerCase();
+    return rawData.filter(r => r.lan.toLowerCase().includes(q) || r.customerName.toLowerCase().includes(q));
+  }, [rawData, search]);
+
+  const toggleSelect = (lan) => {
+    setSelected(prev => { const next = new Set(prev); next.has(lan) ? next.delete(lan) : next.add(lan); return next; });
+  };
+  const toggleAll = () => {
+    setSelected(rows.every(r => selected.has(r.lan)) ? new Set() : new Set(rows.map(r => r.lan)));
+  };
+
+  const handleSendEmail = () => {
+    const existing = JSON.parse(localStorage.getItem('lanEscalationSent') || '{}');
+    const ts = new Date().toISOString();
+    selected.forEach(lan => { existing[lan] = ts; });
+    localStorage.setItem('lanEscalationSent', JSON.stringify(existing));
+    setShowEmailModal(false);
+    setSelected(new Set());
+  };
+
+  const statusBadge = (paytm, lender) => {
+    const mismatch = paytm !== lender;
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">{paytm}</span>
+        {mismatch && <span className="text-[10px] text-slate-400">vs</span>}
+        {mismatch && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700">{lender}</span>}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <button onClick={navigateBackFromLanBreakdown} className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">← Back to Repayment</button>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">{config.title || 'Unreconciled Repayments'}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">LANs where Paytm shows paid but lender file shows unpaid — investigate settlement gaps</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 text-right">
+          <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">Unreconciled</p>
+          <p className="text-xl font-bold text-amber-700">{rawData.length}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+          <input type="text" placeholder="Search by LAN or customer name..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <p className="text-xs text-slate-500">{selected.size} selected</p>
+        {selected.size > 0 && (
+          <button onClick={() => setShowEmailModal(true)} className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-slate-900 transition-colors">
+            <span>✉</span> Escalate to Lender
+          </button>
+        )}
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-50/80 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="px-3 py-2.5 w-8"><input type="checkbox" onChange={toggleAll} checked={rows.length > 0 && rows.every(r => selected.has(r.lan))} className="w-3.5 h-3.5 rounded" /></th>
+                <th className="text-left px-3 py-2.5">LAN</th>
+                <th className="text-left px-3 py-2.5">Customer</th>
+                <th className="text-left px-3 py-2.5">Status</th>
+                <th className="text-right px-3 py-2.5">Amount (₹)</th>
+                <th className="text-left px-3 py-2.5">Payment Date</th>
+                <th className="text-left px-3 py-2.5">Mismatch Reason</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {rows.map(row => (
+                <tr key={row.lan} className={`${selected.has(row.lan) ? 'bg-blue-50/40' : 'hover:bg-slate-50/50'}`}>
+                  <td className="px-3 py-2.5"><input type="checkbox" checked={selected.has(row.lan)} onChange={() => toggleSelect(row.lan)} className="w-3.5 h-3.5 rounded" /></td>
+                  <td className="px-3 py-2.5">
+                    <button onClick={() => navigateToCustomer360(row.lan)} className="text-blue-600 hover:text-blue-800 font-medium hover:underline">{row.lan}</button>
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-700 font-medium">{row.customerName}</td>
+                  <td className="px-3 py-2.5">{statusBadge(row.paytmStatus, row.lenderStatus)}</td>
+                  <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-slate-800">₹{row.amount.toLocaleString('en-IN')}</td>
+                  <td className="px-3 py-2.5 text-slate-600 tabular-nums">{row.paymentDate}</td>
+                  <td className="px-3 py-2.5">
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">{row.mismatchReason}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
+              <h3 className="text-base font-bold text-slate-900">Escalate Unreconciled Repayments to Lender</h3>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">To</label>
+                <p className="text-sm text-slate-700 mt-1 bg-slate-50 rounded-lg px-3 py-2">recon-support@ssfb-lender.com</p>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Subject</label>
+                <p className="text-sm text-slate-700 mt-1 bg-slate-50 rounded-lg px-3 py-2">
+                  URGENT: Unreconciled Repayments — {selected.size} LANs — Feb 2026
+                </p>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Message</label>
+                <div className="mt-1 bg-slate-50 rounded-lg px-3 py-2 text-sm text-slate-700 leading-relaxed">
+                  <p>Hi Team,</p><br />
+                  <p>We have identified {selected.size} Loan Account Numbers where Paytm records show the repayment as Paid, but the lender file reflects Unpaid status. Please investigate the settlement pipeline for these LANs and confirm resolution at the earliest.</p><br />
+                  <p>Thanks,<br />Finance Ops</p>
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Attachment</label>
+                <div className="mt-1 flex items-center gap-2 text-sm text-slate-600">
+                  <span className="text-slate-400">📎</span> Unreconciled_Repayments_{selected.size}_LANs.csv
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3">
+              <button onClick={() => setShowEmailModal(false)} className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Cancel</button>
+              <button onClick={handleSendEmail} className="px-5 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700">Send Email</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
