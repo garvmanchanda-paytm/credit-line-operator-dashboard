@@ -98,6 +98,8 @@ Conversion RAG (step conversion vs LMTD):
 - `src/pages/SnapshotView.jsx`
 - `src/pages/DeepdiveView.jsx`
 - `src/pages/StageDetailPage.jsx`
+- `src/pages/SubStageDeepDivePage.jsx`
+- `src/pages/LeadDeepDivePage.jsx`
 - `src/components/VerticalFunnel.jsx`
 - `src/components/KPIStrip.jsx`
 - `src/components/SubStageTable.jsx`
@@ -105,5 +107,33 @@ Conversion RAG (step conversion vs LMTD):
 
 ## Navigation
 
-- Sidebar: "Funnel" section with Snapshot and Deepdive sub-items
+- Sidebar: "Funnel" section with Snapshot, Deepdive, Sub-Stage Dive, and Lead Deep Dive sub-items
 - Stage Detail: full-page navigation from stage click (no popup)
+- Sub-Stage Deep Dive: filterable view with Stage/Substage dropdowns, INTRADAY/MTD/LTD tabs, DEBUG buttons, Issue Lead IDs
+- Lead Deep Dive: individual lead investigation with event timeline, Kibana and Lead Assist deep-links
+
+## Sub-Stage Deep Dive
+
+A dedicated investigation page for drilling into specific stage/sub-stage combinations:
+- **Stage Dropdown**: Filter by any L1 funnel stage
+- **Substage Dropdown**: Filter by specific sub-stages within the selected stage
+- **Time Tabs**: INTRADAY (today's data), MTD (month to date), LTD (lifetime)
+- **Date Range Picker**: From/To date inputs
+- **Lender Filter**: ALL / SSFB / JANA
+- **Sub-Stage Table**: Each row shows Category, Sub-stage, Count, Conv %, Delta vs LMTD, Status (CRITICAL/WARNING/OK), and a DEBUG button
+- **Inline Expansion**: Clicking a row expands to show 7-day trend, API health, and Issue Lead IDs
+- **DEBUG Button**: Opens Kibana with pre-filled stage/substage parameters
+- **Issue Lead IDs**: Shows sample lead IDs hitting the selected sub-stage with links to Lead Deep Dive and Kibana
+
+## Lead Deep Dive
+
+A per-lead investigation page:
+- **Lead ID Input**: Enter or paste a lead ID and click LOAD
+- **Sample Leads**: Quick-select from pre-loaded sample lead IDs
+- **External Tool Links**: Cards linking to Kibana and Lead Assist with the lead ID pre-filled
+- **Settings**: Configurable Kibana Base URL and Lead Assist Base URL
+- **Event Timeline**: Chronological table of all stage transitions (Domain, Stage, Substage, Status, Created)
+
+## Funnel Stages (22 total)
+
+1. APPLICATION_LOADED → 2. BASIC_DETAILS_CAPTURED → 3. BUREAU_IN_PROGRESS → 4. BRE_COMPLETED → 5. LENDER_PAN_VALIDATION → 6. SELFIE_CAPTURED → 7. KYC_VALIDATION_SUCCESS → 8. LENDER_RETAIL_DEDUPE → 9. LENDER_AADHAAR_PAN_LINK → 10. LENDER_NAME_SIMILARITY_CHECK → 11. LENDER_FACE_SIMILARITY_CHECK → 12. KYC_PINCODE_SERVICEABILITY_CHECK_SUCCESS → 13. LENDER_BRE_INITIATED → 14. LENDER_BRE_APPROVE_SUCCESS → 15. CREDIT_LINE_OFFER_ACCEPTED → 16. LENDER_PENNY_DROP_SUCCESS → 17. MAQUETTE_FRAUD_CHECK → 18. MANDATE_SUCCESS → 19. REVIEW_OFFER_ACCEPTED → 20. ESIGN_SUCCESS → 21. DEVICE_BINDING_CHECK → 22. LEAD_SUCCESSFULLY_CLOSED

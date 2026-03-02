@@ -736,7 +736,7 @@ function LenderComparisonPanel({ stageName }) {
 // ─── Main Page ──────────────────────────────────────────────────────────
 
 export default function StageDetailPage() {
-  const { drillDownStage, navigateBackFromStageDetail, funnelType } = useDashboard();
+  const { drillDownStage, navigateBackFromStageDetail, funnelType, navigateToLeadDeepDive, navigateToSubStageDeepDive } = useDashboard();
 
   const stageInfo = useMemo(() => {
     if (!drillDownStage) return null;
@@ -828,10 +828,16 @@ export default function StageDetailPage() {
 
       {/* L2 Sub-Stages (existing table with expand) */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100">
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wide">L2 Sub-Stages</h3>
+          <button
+            onClick={() => navigateToSubStageDeepDive(drillDownStage)}
+            className="text-[10px] font-semibold text-blue-600 border border-blue-200 bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            Open in Deep Dive →
+          </button>
         </div>
-        <SubStageTable parentStage={drillDownStage} />
+        <SubStageTable parentStage={drillDownStage} onOpenLeadDeepDive={navigateToLeadDeepDive} />
         {isSelfieStage && <SelfieErrorBreakdown />}
       </div>
 

@@ -614,6 +614,39 @@ Three progressive layers:
 
 ---
 
+## v4.0 Changelog — Colleague Design Merge (Sub-Stage Deep Dive, Lead Deep Dive, Business Highlights)
+
+### What Changed
+- **Expanded Funnel Stages (13 → 22)**: Added 9 intermediate stages to `funnelMTD.js`: LENDER_PAN_VALIDATION, LENDER_RETAIL_DEDUPE, LENDER_AADHAAR_PAN_LINK, LENDER_NAME_SIMILARITY_CHECK, LENDER_FACE_SIMILARITY_CHECK, LENDER_BRE_INITIATED, CREDIT_LINE_OFFER_ACCEPTED, MAQUETTE_FRAUD_CHECK, DEVICE_BINDING_CHECK.
+- **Sub-Stage Deep Dive Page** (`SubStageDeepDivePage.jsx`): New full-page view with Stage + Sub-stage dropdowns, INTRADAY/MTD/LTD time tabs, date range picker, lender filter, DEBUG buttons per row, inline 7-day trend, API health, and Issue Lead IDs panel with "Open Lead Deep Dive" and "Kibana" links.
+- **Lead Deep Dive Page** (`LeadDeepDivePage.jsx`): New page for investigating individual lead journeys. Features Lead ID input with LOAD, quick-select sample leads, Kibana and Lead Assist deep-link cards, and a chronological event timeline table (Domain, Stage, Substage, Status, Created).
+- **Lead Events Mock Data** (`leadEvents.js`): 20 sample leads with procedurally generated event sequences; `getLeadsBySubStage()` utility to match leads by stage/substage.
+- **Business Performance Highlights** (InsightLandingPage): New 3-column card strip (Landing to Lead Conversion, Bureau Success Rate, BRE Approval Rate) with contextual labels ("Strong Performance", "Stable Ops", "Revenue Opportunity") using RAG-colored badges.
+- **DEBUG Buttons on SubStageTable**: Every sub-stage row now has a DEBUG button that opens Kibana with pre-filled stage and substage parameters.
+- **Issue Lead IDs in SubStageTable Expanded**: When a sub-stage row is expanded, an "Issue Lead IDs" panel shows sample leads hitting that substage with links to Lead Deep Dive and Kibana.
+- **"Open in Deep Dive" CTA on StageDetailPage**: Quick-nav button in L2 Sub-Stages section header links to the Sub-Stage Deep Dive page pre-filtered to the current stage.
+- **Sidebar Navigation**: Added "Sub-Stage Dive" and "Lead Deep Dive" items under the Funnel group.
+- **DashboardContext**: Added `deepDiveStage`, `deepDiveSubStage`, `selectedLeadId` state and navigation helpers.
+
+### New Files
+| File | Purpose |
+|------|---------|
+| `src/pages/SubStageDeepDivePage.jsx` | Sub-Stage Deep Dive with filters, table, DEBUG, leads |
+| `src/pages/LeadDeepDivePage.jsx` | Lead journey investigation with event timeline |
+| `src/mockData/leadEvents.js` | Mock lead IDs and event sequences |
+
+### Modified Files
+| File | Change |
+|------|--------|
+| `src/mockData/funnelMTD.js` | Expanded from 13 to 22 stages |
+| `src/context/DashboardContext.jsx` | Added sub-stage/lead deep dive state |
+| `src/components/SubStageTable.jsx` | DEBUG buttons, Issue Lead IDs panel |
+| `src/pages/StageDetailPage.jsx` | "Open in Deep Dive" CTA, pass `onOpenLeadDeepDive` |
+| `src/pages/InsightLandingPage.jsx` | Business Performance Highlights strip |
+| `src/App.jsx` | New nav items and route entries |
+
+---
+
 ## 8. Open Questions
 
 | # | Question | Status | Resolution |

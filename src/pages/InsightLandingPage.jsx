@@ -59,6 +59,27 @@ function Sparkline({ data, color = '#3b82f6' }) {
   );
 }
 
+function BizHighlightCard({ label, value, tag, tagColor = 'emerald' }) {
+  const colorMap = {
+    emerald: { bg: 'bg-emerald-100', text: 'text-emerald-700' },
+    blue: { bg: 'bg-blue-100', text: 'text-blue-700' },
+    amber: { bg: 'bg-amber-100', text: 'text-amber-700' },
+    red: { bg: 'bg-red-100', text: 'text-red-700' },
+    slate: { bg: 'bg-slate-100', text: 'text-slate-500' },
+  };
+  const colors = colorMap[tagColor] || colorMap.slate;
+
+  return (
+    <div className="px-5 py-4">
+      <p className="text-[11px] font-medium text-slate-500 mb-1">{label}</p>
+      <p className="text-2xl font-bold text-slate-900">{value}</p>
+      <span className={`inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded ${colors.bg} ${colors.text}`}>
+        {tag}
+      </span>
+    </div>
+  );
+}
+
 function SectionCard({ title, summary, sparkData, sparkColor, ragCount, onClick }) {
   return (
     <div onClick={onClick} className="bg-white rounded-xl border border-slate-200 p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all group">
@@ -570,6 +591,44 @@ export default function InsightLandingPage() {
           onClick={() => setActiveView('postOnboarding')}
           t1Delta={t1Deltas.portfolio}
         />
+      </div>
+
+      {/* Business Performance Highlights */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100">
+          <h2 className="text-sm font-bold text-slate-900">Business Performance Highlights</h2>
+          <p className="text-[10px] text-slate-400 mt-0.5">Key onboarding & portfolio indicators with contextual labels</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 divide-x divide-slate-100">
+          <BizHighlightCard
+            label="Landing to Lead Conversion"
+            value={`${funnelStats.overallConv}%`}
+            tag={parseFloat(funnelStats.overallConv) > 0.8 ? 'Strong Performance' : parseFloat(funnelStats.overallConv) > 0.5 ? 'Stable Ops' : 'Needs Attention'}
+            tagColor={parseFloat(funnelStats.overallConv) > 0.8 ? 'emerald' : parseFloat(funnelStats.overallConv) > 0.5 ? 'blue' : 'amber'}
+          />
+          <BizHighlightCard
+            label="Bureau Success Rate"
+            value={`${funnelData.length > 3 ? ((funnelData[3].count / funnelData[2].count) * 100).toFixed(1) : '0.0'}%`}
+            tag="Stable Ops"
+            tagColor="blue"
+          />
+          <BizHighlightCard
+            label="BRE Approval Rate"
+            value={funnelData.find(s => s.stage === 'BRE_COMPLETED')?.conversionRate != null
+              ? `${funnelData.find(s => s.stage === 'BRE_COMPLETED').conversionRate.toFixed(1)}%`
+              : '—'}
+            tag={(() => {
+              const bre = funnelData.find(s => s.stage === 'BRE_COMPLETED');
+              if (!bre?.conversionRate) return 'No Data';
+              return bre.conversionRate > 40 ? 'Revenue Opportunity' : 'Needs Attention';
+            })()}
+            tagColor={(() => {
+              const bre = funnelData.find(s => s.stage === 'BRE_COMPLETED');
+              if (!bre?.conversionRate) return 'slate';
+              return bre.conversionRate > 40 ? 'amber' : 'red';
+            })()}
+          />
+        </div>
       </div>
 
       {/* Section Cards (lender-dependent) */}

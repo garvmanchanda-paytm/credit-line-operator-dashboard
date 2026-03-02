@@ -102,6 +102,35 @@ export function DashboardProvider({ children }) {
     setPostOnbTab('repayment');
   }, []);
 
+  // Sub-Stage Deep Dive state
+  const [deepDiveStage, setDeepDiveStage] = useState(null);
+  const [deepDiveSubStage, setDeepDiveSubStage] = useState(null);
+
+  const navigateToSubStageDeepDive = useCallback((stage, subStage) => {
+    setDeepDiveStage(stage || null);
+    setDeepDiveSubStage(subStage || null);
+    setActiveView('subStageDeepDive');
+  }, []);
+
+  const navigateBackFromSubStageDeepDive = useCallback(() => {
+    setDeepDiveStage(null);
+    setDeepDiveSubStage(null);
+    setActiveView('snapshot');
+  }, []);
+
+  // Lead Deep Dive state
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+
+  const navigateToLeadDeepDive = useCallback((leadId) => {
+    setSelectedLeadId(leadId || null);
+    setActiveView('leadDeepDive');
+  }, []);
+
+  const navigateBackFromLeadDeepDive = useCallback(() => {
+    setSelectedLeadId(null);
+    setActiveView('subStageDeepDive');
+  }, []);
+
   // Track which view the drill-down was triggered from
   const openDrillDown = useCallback((stage) => {
     setPreviousView((prev) => prev || 'snapshot');
@@ -177,6 +206,14 @@ export function DashboardProvider({ children }) {
         selectedDpdBucket,
         navigateToDpdBreakdown,
         navigateBackFromDpdBreakdown,
+        deepDiveStage,
+        deepDiveSubStage,
+        navigateToSubStageDeepDive,
+        navigateBackFromSubStageDeepDive,
+        selectedLeadId,
+        setSelectedLeadId,
+        navigateToLeadDeepDive,
+        navigateBackFromLeadDeepDive,
       }}
     >
       {children}

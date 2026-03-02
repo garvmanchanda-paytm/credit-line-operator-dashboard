@@ -13,6 +13,8 @@ import Customer360Page from './pages/Customer360Page';
 import ErrorCodeDetailPage from './pages/ErrorCodeDetailPage';
 import DpdBreakdownPage from './pages/DpdBreakdownPage';
 import EmergencyView from './pages/EmergencyView';
+import SubStageDeepDivePage from './pages/SubStageDeepDivePage';
+import LeadDeepDivePage from './pages/LeadDeepDivePage';
 import { funnelByLender } from './mockData/funnelMTD';
 import { getFilteredIssues } from './mockData/issueCategories';
 
@@ -42,6 +44,24 @@ const FUNNEL_NAV = [
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'subStageDeepDive',
+    label: 'Sub-Stage Dive',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+  },
+  {
+    id: 'leadDeepDive',
+    label: 'Lead Deep Dive',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     ),
   },
@@ -166,6 +186,8 @@ const HEADER_MAP = {
   errorCodeDetail: { title: 'UPI Error Code — Deep Dive', sub: 'Transaction Logs & 7-Day Trend Analysis' },
   dpdBreakdown:    { title: 'DPD Discrepancy Investigation', sub: 'LAN-Level DPD Mismatch — Paytm LMS vs Lender File' },
   emergency:       { title: 'Emergency View', sub: 'All RED Signals Across All Pillars — Incident Command' },
+  subStageDeepDive: { title: 'Sub-Stage Deep Dive', sub: 'Filter by Stage & Sub-Stage — INTRADAY / MTD / LTD Analysis' },
+  leadDeepDive:     { title: 'Lead Deep Dive', sub: 'Individual Lead Journey — Event Timeline & Engineering Tools' },
 };
 
 function TopHeader() {
@@ -213,6 +235,8 @@ function MainContent() {
         {activeView === 'errorCodeDetail' && <ErrorCodeDetailPage />}
         {activeView === 'dpdBreakdown' && <DpdBreakdownPage />}
         {activeView === 'emergency' && <EmergencyView />}
+        {activeView === 'subStageDeepDive' && <SubStageDeepDivePage />}
+        {activeView === 'leadDeepDive' && <LeadDeepDivePage />}
       </div>
     </div>
   );

@@ -2,8 +2,11 @@ import { useMemo, useState } from 'react';
 import { allStages } from '../mockData/allStages';
 import { subStageApiHealth, getSubStageTrend } from '../mockData/subStageApi';
 import { subStageErrors } from '../mockData/logErrors';
+import { getLeadsBySubStage } from '../mockData/leadEvents';
 import { formatNumber, getDeltaColor, getDeltaBold } from '../utils/rag';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+
+const KIBANA_BASE = 'https://kibana.internal.paytm.com/app/discover';
 
 const TREND_ICONS = {
   stable: { icon: '→', color: 'text-slate-400', label: 'Stable' },
@@ -141,7 +144,51 @@ function SubStageApiTable({ subStage, timeWindow }) {
   );
 }
 
-function ExpandedDetail({ ss }) {
+function IssueLeadIDs({ parentStage, subStage, onOpenLeadDeepDive }) {
+  const leads = useMemo(() => getLeadsBySubStage(parentStage, subStage), [parentStage, subStage]);
+
+  if (leads.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <h5 className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">Issue Lead IDs</h5>
+        <span className="text-[9px] text-slate-400">{leads.length} leads</span>
+      </div>
+      <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
+        {leads.map((lead) => (
+          <div key={lead.leadId} className="flex items-center justify-between bg-white rounded-md px-2.5 py-1.5 border border-slate-100">
+            <div>
+              <p className="text-[11px] font-mono font-medium text-slate-800">{lead.leadId}</p>
+              <p className="text-[9px] text-slate-400">{lead.stage} · {lead.status}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {onOpenLeadDeepDive && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onOpenLeadDeepDive(lead.leadId); }}
+                  className="text-[9px] font-bold text-blue-600 hover:underline"
+                >
+                  OPEN LEAD DEEP DIVE
+                </button>
+              )}
+              <a
+                href={`${KIBANA_BASE}?leadId=${lead.leadId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-[9px] font-bold text-purple-600 hover:underline"
+              >
+                Kibana
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ExpandedDetail({ ss, onOpenLeadDeepDive }) {
   const [timeWindow, setTimeWindow] = useState('7d');
 
   return (
@@ -174,11 +221,12 @@ function ExpandedDetail({ ss }) {
 
       <SubStageApiTable subStage={ss.subStage} timeWindow={timeWindow} />
       <SubStageErrorTable subStage={ss.subStage} timeWindow={timeWindow} />
+      <IssueLeadIDs parentStage={ss.parentStage} subStage={ss.subStage} onOpenLeadDeepDive={onOpenLeadDeepDive} />
     </div>
   );
 }
 
-export default function SubStageTable({ parentStage }) {
+export default function SubStageTable({ parentStage, onOpenLeadDeepDive }) {
   const [expandedRow, setExpandedRow] = useState(null);
 
   const subStages = useMemo(() =>
@@ -190,6 +238,11 @@ export default function SubStageTable({ parentStage }) {
     return <div className="text-sm text-slate-500 py-4 text-center">No sub-stage data available</div>;
   }
 
+  const handleDebug = (e, ss) => {
+    e.stopPropagation();
+    window.open(`${KIBANA_BASE}?stage=${ss.parentStage}&substage=${ss.subStage}`, '_blank');
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
@@ -200,6 +253,7 @@ export default function SubStageTable({ parentStage }) {
             <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase tracking-wider">MTD %</th>
             <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase tracking-wider">LMTD %</th>
             <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase tracking-wider">Delta</th>
+            <th className="text-center px-3 py-2 font-semibold text-slate-500 uppercase tracking-wider w-[60px]">Action</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -211,7 +265,7 @@ export default function SubStageTable({ parentStage }) {
 
             return (
               <tr key={ss.subStage} className="group">
-                <td colSpan={5} className="p-0">
+                <td colSpan={6} className="p-0">
                   <div
                     className={`flex items-center cursor-pointer transition-colors ${
                       isExpanded ? 'bg-indigo-50/60' : 'hover:bg-slate-50'
@@ -245,9 +299,17 @@ export default function SubStageTable({ parentStage }) {
                     } ${isBold ? 'font-bold' : 'font-medium'}`}>
                       {ss.lmtdDelta > 0 ? '+' : ''}{ss.lmtdDelta.toFixed(1)}pp
                     </div>
+                    <div className="w-[60px] px-3 py-2 text-center">
+                      <button
+                        onClick={(e) => handleDebug(e, ss)}
+                        className="text-[9px] font-bold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded hover:bg-blue-100 transition-colors"
+                      >
+                        DEBUG
+                      </button>
+                    </div>
                   </div>
 
-                  {isExpanded && <ExpandedDetail ss={ss} />}
+                  {isExpanded && <ExpandedDetail ss={ss} onOpenLeadDeepDive={onOpenLeadDeepDive} />}
                 </td>
               </tr>
             );
