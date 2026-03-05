@@ -29,6 +29,7 @@ export function DashboardProvider({ children }) {
   const [charterFilter, setCharterFilter] = useState('all');
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [selectedCohort, setSelectedCohort] = useState(null);
+  const [pulseTab, setPulseTab] = useState('overview');
 
   const navigateToIssueDetail = useCallback((issueId) => {
     setSelectedIssue(issueId);
@@ -180,6 +181,8 @@ export function DashboardProvider({ children }) {
         setPulseTimeWindow,
         charterFilter,
         setCharterFilter,
+        pulseTab,
+        setPulseTab,
         selectedIssue,
         selectedCohort,
         navigateToIssueDetail,

@@ -178,7 +178,7 @@ const HEADER_MAP = {
   deepdive:       { title: 'Onboarding Funnel Dashboard', sub: 'Paytm Postpaid (TPAP) — Feb 2026' },
   stageDetail:    { title: 'Stage Detail', sub: 'Funnel Drill-Down — L2 / L3 Analysis' },
   disbursement:   { title: 'Disbursement Analysis', sub: 'Paytm Postpaid — Approval to Disbursement' },
-  userPulse:      { title: 'User Pulse — CST Dashboard', sub: 'Paytm Postpaid — Customer Support Tickets' },
+  userPulse:      { title: 'User Pulse — CST Dashboard', sub: 'Paytm Postpaid — Overview & Pulse Deep Dive' },
   issueDetail:    { title: 'Issue Detail', sub: 'User Pulse — Cohort Breakdown & Actions' },
   postOnboarding: { title: 'Post-Onboarding — Deep Dive', sub: 'Paytm Postpaid — Portfolio · Recon · Repayments · Spends' },
   lanBreakdown:   { title: 'Discrepancy Investigation', sub: 'LAN-Level Breakdown — Paytm LMS vs Lender File' },
